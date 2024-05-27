@@ -1,0 +1,110 @@
+import fu::src::context;
+import fu::src::module;
+import fu::src::helpers;
+import fu::src::hacks;
+import fu::src::lifetime;
+
+import style;
+import by_byte;
+import by_token;
+
+
+//
+
+fn getSyntaxHighlighting(implicit ctx: Context, fail): Style[]
+{
+    shadow let fail = |reason: string|
+        fail("getSyntaxHighlighting: " ~ reason);
+
+    let modid       = 1;
+    if (ctx.modules.len <= modid)
+        return fail("ctx.modules.len < " ~ (modid + 1));
+
+    implicit module = ctx.modules[modid];
+    let tokens      = module.in.lex.tokens;
+
+    implicit mut by_token: Style[];
+    by_token.resize(tokens.len);
+
+
+    //
+
+    implicit mut targets_by_token: Target[];
+    targets_by_token.resize(tokens.len);
+
+
+    //
+
+    v1::traverseRawTokens(:fn fail);
+    v2::traverseSolvedNodes(:fn fail);
+
+
+    // Targets -> colors
+
+    targets_by_token.each: |target, i|
+    {
+        if (target)
+        {
+            implicit _here = TokenIdx(:modid, tokidx: i);
+            applyColor(:target.color, :i);
+        }
+    }
+
+
+    // Done.
+
+    return by_byte(
+        :module.in.src, :tokens, :by_token,
+        :fn fail);
+}
+
+
+//
+
+fn fill(c: Color, len: int)
+{
+    mut res = [ c.u8.Style ];
+    while (res.len < len) res ~= res;
+    res.shrink(len);
+    return res;
+}
+
+fn getExact(src: string): Style[]
+{
+    if (v1::BASIC_TYPES.has(src))
+        return fill(:src.len, "Type");
+
+    if (v1::CONTROL_FLOW.has(src))
+        return fill(:src.len, "ControlFlow");
+
+    if (v1::PRIMITIVE_LITERALS.has(src))
+        return fill(:src.len, "PrimitiveLiteral");
+
+    if (v1::DECLARATIONS.has(src))
+        return fill(:src.len, "Declaration");
+
+    return [];
+}
+
+fn getBestGuess(src: string): Style[]
+{
+    for (mut i = 0; i < src.len; i++)
+    {
+        let c = src[i];
+        if (c >= 'a' && c <= 'z' ||
+            c >= 'A' && c <= 'Z' ||
+            c == '_')
+        {
+            continue;
+        }
+        else if (c >= '0' && c <= '9')
+        {
+            if (i)
+                continue;
+        }
+
+        return fill(:src.len, "None");
+    }
+
+    return fill(:src.len, "Type");
+}

@@ -1,0 +1,249 @@
+<style>
+
+.candy {
+    display:            block;
+    height:             40vh;
+    height:             40svh;
+
+    background:
+        linear-gradient(
+            45deg,
+            var(--hi-red) 40%,
+            var(--hi-orange) 40%,
+            var(--hi-orange) 60%,
+            var(--hi-cyan) 60%,
+            var(--hi-cyan) 80%,
+            var(--hi-blue) 80%,
+            var(--hi-blue) 90%,
+            var(--hi-green) 90%);
+
+    display:            flex;
+    flex-flow:          column nowrap;
+    justify-content:    flex-end;
+}
+
+.candy-logo {
+    max-width:          unset;
+
+    --width:            13.20vh;
+    color:              var(--txt-top);
+    color:              white;
+    color:              var(--bgr-main);
+    margin-bottom:      0rem;
+
+    width:              var(--width);
+    margin-top:         calc(-0.975 * var(--width));
+}
+
+.full-width {
+    margin-left:        calc(-1 * var(--pad-left));
+    margin-right:       calc(-1 * var(--pad-right));
+    padding-left:       var(--pad-left);
+    padding-right:      var(--pad-right);
+}
+
+.demo {
+    overflow-x:         scroll;
+
+    scroll-snap-type:   x mandatory;
+
+    display:            flex;
+    flex-flow:          row nowrap;
+    align-items:        stretch;
+
+    padding:            1rem calc(var(--gutter) - var(--gutter-inner));
+}
+
+.demo code {
+    overflow:           hidden;
+
+    border:             none;
+    background:         none;
+    margin:             0;
+    padding:            0;
+}
+
+.demo pre {
+    flex-grow:          1;
+
+    margin:             0 calc(-1 * var(--gutter-inner));
+    padding:            .5rem var(--gutter-inner);
+    background:         var(--bgr-box);
+
+    margin-top:         .5rem;
+}
+
+.demo-link {
+    display:            block;
+    text-decoration:    none;
+
+    scroll-snap-align:  center center;
+
+    max-width:          45rem;
+    width:              calc(
+        100% - var(--pad-left)
+             - var(--pad-right));
+
+    flex-grow:          0;
+    flex-shrink:        0;
+
+    display:            flex;
+    flex-flow:          column nowrap;
+
+    background:         var(--bgr-main);
+    padding:            0 var(--gutter-inner);
+}
+
+.demo-link:not(:first-child) {
+    border-left:        1px solid var(--clr-borders);
+}
+
+@media (hover: hover) {
+    .demo-link:hover {
+        background:         var(--bgr-box);
+    }
+}
+
+.col-toc {
+    visibility:         hidden;
+}
+
+.demo-link>*:first-child {
+    margin-top:         1em;
+}
+
+.webkit .demo-link {
+
+    /* Firefox 115: position: sticky messes up scroll-snap 2024-05-27 */
+
+    position:           sticky;
+    left:               calc(-1 * var(--gutter) + var(--gutter-inner) - 1px);
+}
+
+.candy-motto { margin-top: 2rem; margin-bottom: 0rem; }
+
+</style>
+
+<div class="full-width candy dark">
+</div>
+
+<svg viewBox="0 0 1011 999" class="logo candy-logo">
+<path class="shape" d="M0 999L245 999L245 612L395 612L395 616C387 884,498 999,766 999L1011 999L1011 383L766 383L766 773C654 773,616 736,616 624L616 383L245 383C245 283,295 233,395 233L616 233L616 0L383 0C128 0,0 128,0 383L0 999Z "></path>
+</svg>
+
+<p class="candy-motto">A research language exploring a pragmatic, highly expressive set of implicit programming techniques. <strong>We want to build better software by writing less code.</strong></p>
+
+<div class="demo full-width">
+<!--demo-->
+</div>
+
+<script>
+
+let rnd = (Date.now() / 1000000) >>> 0;
+
+function rand() {
+    rnd = (rnd ^ (rnd << 13)) >>> 0;
+    rnd = (rnd ^ (rnd >> 17)) >>> 0;
+    rnd = (rnd ^ (rnd <<  5)) >>> 0;
+    return rnd / 0x100000000;
+}
+
+function initDemo() {
+    let interval    = 0;
+    let last_now    = 0;
+
+    let WAIT_long   = 15000;
+    let WAIT_short  = 10000;
+
+    let WAIT        = WAIT_long;
+
+    function dont_overdo_it() {
+        last_now    = Date.now();
+    }
+
+    function clear() {
+        if (interval)
+            clearInterval(interval);
+
+        interval    = 0;
+    }
+
+    function reset() {
+        clear();
+        interval    = setInterval(scrollToRandomItem, 1000);
+
+        dont_overdo_it();
+    }
+
+    let demo = document.querySelector(".demo");
+
+    let N = demo.children.length;
+    for (let i = N; i >= 0; i--)
+        demo.appendChild(demo.children[rand() * i | 0]);
+
+    function scrollToRandomItem() {
+        let now     = Date.now();
+        let td      = Math.abs(now - (last_now || (last_now = now)));
+        if (td      < WAIT) return;
+
+        WAIT        = WAIT_short;
+        last_now    = now;
+
+        let current = demo.scrollLeft;
+        let max     = demo.scrollWidth;
+
+        let slide   = max / N;
+        let next    = current + slide;
+        if (next    > max - slide)
+            next    = 0;
+
+        demo.scroll({ left: next, behavior: "smooth" });
+    }
+
+    let mediaQuery = window.matchMedia
+                  && window.matchMedia('(hover: hover)');
+
+    if (mediaQuery && mediaQuery.matches) {
+        demo.addEventListener("mouseenter", clear);
+        demo.addEventListener("mouseleave", reset);
+    }
+    else {
+        document.body.addEventListener("pointerdown", e => {
+            e = e.target;
+            while (e) {
+                if (e == demo) return clear();
+                e = e.parentNode;
+            }
+
+            return reset();
+        });
+
+        // Mobile, shorter attention spans.
+        WAIT_short  /= 2;
+        WAIT_long   /= 2;
+        WAIT        /= 2;
+    }
+
+    demo.addEventListener("scroll", dont_overdo_it);
+    window.addEventListener("focus", dont_overdo_it);
+
+    reset();
+
+    if (/WebKit/.test(navigator.userAgent))
+        demo.classList.add("webkit");
+}
+
+initDemo();
+
+</script>
+
+<!--define card-open-->
+<a class="demo-link" href="{href}">
+<div class="lnk-lbl">Feature Highlight</div>
+<div class="lnk-ttl">{title}</div>
+<pre><code>
+<!--end-->
+<!--define card-close-->
+</code></pre>
+</a>
+<!--end-->

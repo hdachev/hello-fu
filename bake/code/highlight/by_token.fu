@@ -1,0 +1,145 @@
+pub import fu::src::module;
+pub import fu::src::helpers;
+pub import fu::src::types;
+pub import fu::src::flags;
+pub import fu::src::effects;
+
+pub import style;
+
+
+//
+
+fn applyTarget(implicit ref targets_by_token: Target[], i: int, target: Target)
+    targets_by_token.if(exists: i): |ref out|
+        out = target;
+
+fn applyColor(implicit ref by_token: Style[], i: int, color: Color, ifClear!?: bool)
+    by_token.if(exists: i): |ref out|
+        if (!ifClear || !out)
+            (out &= Style_ModifierBits) |= color.u8.Style & Style_ColorBits;
+
+fn applyMask(implicit ref by_token: Style[], i: int, style: Style)
+    by_token.if(exists: i): |ref out|
+        out |= style & Style_ModifierBits;
+
+
+//
+
+fn applyTarget(implicit module: Module, t: TokenIdx, target: Target)
+    if (t.modid == module.modid)
+        applyTarget(t.tokidx, :target);
+
+fn applyColor(implicit module: Module, t: TokenIdx, color: Color)
+    if (t.modid == module.modid)
+        applyColor(t.tokidx, :color);
+
+fn applyMask(implicit module: Module, t: TokenIdx, style: Style)
+    if (t.modid == module.modid)
+        applyMask(t.tokidx, :style);
+
+
+//
+
+fn heursticFloodfill(implicit module: Module, start: int, id: string, color: Color)
+{
+    mut depth = 0;
+
+    let tokens = module.in.lex.tokens;
+    for (mut i = start; i < tokens.len; i++)
+    {
+        let t = tokens[i];
+        let k = t.kind;
+        let v = t.value;
+
+        if (k == "id" && v == id)
+        {
+            applyColor(i, color);
+        }
+        else if (k == "op")
+        {
+            // Traverse, ballancing curlies -
+            //  balancing parens is harder, because they don't introduce scopes,
+            //   so this will have to do, if unhappy with the result for some snippet,
+            //    add curlies!
+            //
+            if (v == "{")
+                depth++;
+            else if (v == "}")
+                if !(depth--)
+                    break;
+        }
+    }
+}
+
+
+//
+
+fn nested(implicit module: Module, implicit _current_globid: int, locid!: int)
+{
+    return Target(:module.modid, globid: _current_globid, :locid);
+}
+
+fn GET(implicit ctx: Context, t: Target): Overload
+{
+    shadow let module   = ctx.modules[t.modid];
+    let globid          = t.globid;
+    let locid           = t.locid;
+
+    return locid
+        ? {
+            let ext = module.out.solve.scope.extended[globid];
+            ext.args_n_locals[ext.indexOfLocal(:locid)]
+          }
+        : module.out.solve.scope.overloads[globid - 1];
+}
+
+fn EXT(implicit ctx: Context, t: Target): Extended
+{
+    return !t.locid
+        && ctx.modules[t.modid].out.solve.scope.extended[t.globid];
+}
+
+
+//
+
+fn color(t: Target): Color
+{
+    if (!t.modid)
+        return "None";
+
+    let ext = EXT(t);
+    if (ext.spec_of && !ext.spec_of.modid)
+        return "None";
+
+    let o = GET(t);
+    if (o.kind == "var")
+        return varColor(:o.name, :o.type.is_mutref);
+
+    if (o.kind == "fn")
+    {
+        :IF_PURE
+        if !(ext.fx_mask & ~(Fx_NotDeadCode | Fx_Throws))
+        {
+            ext.args.each: |arg|
+                if (arg.written_to)
+                    break :IF_PURE;
+
+            return "PureFn";
+        }
+
+        return "ImpureFn";
+    }
+
+    return "None";
+}
+
+fn varColor(name: string, is_mutref!: bool): Color
+{
+    let c = name.if_only;
+    let unimportant = c >= 'a' && c <= 'z';
+
+    if (is_mutref)
+        return unimportant ? "MinorVariable" : "MajorVariable";
+
+    return unimportant ? "MinorConstant" : "MajorConstant";
+}

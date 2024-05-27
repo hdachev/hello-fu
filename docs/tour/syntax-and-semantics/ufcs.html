@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/static/main.css">
+<link rel="icon" href="/static/favicon.svg">
+<title>Universal Function Call Syntax&nbsp;— The Fu Programming Language</title>
+</head>
+<body>
+<script src="/static/main.js" async></script>
+<noscript><style> .needs-js { display: none; } </style></noscript>
+
+<input type="checkbox" id="hb-chkbx" class="hb-chkbx"/>
+
+<div class="cols">
+
+    <label class="hb-rest" for="hb-chkbx"></label>
+
+    <nav class="col-nav">
+        <div class="col-scroll">
+            <div class="col-header col-header-side"></div>
+            <div class="col-body"><a href="/motivation" class="nav-item nav-1">Motivation</a>
+<div class='nav-group'><div><input type='checkbox' class='nav-chkbx' id="tour-syntax-and-semantics" checked />
+<div class="nav-tree here nav-2">
+<label class="nav-label here nav-2" for="tour-syntax-and-semantics">Syntax &amp; Semantics<svg viewBox="0 0 16 16" class="i-line nav-chevron">
+<path d="M 5 2 L 11 8 L 5 14" />
+</svg></label>
+<div class='nav-children'><a href="/tour/syntax-and-semantics/ufcs" class="nav-item nav-3 here">Universal Function Call Syntax</a>
+<a href="/tour/syntax-and-semantics/overloading" class="nav-item nav-3">Overloading Without Ambiguity</a>
+<a href="/tour/syntax-and-semantics/semantics" class="nav-item nav-3">Value vs Reference Semantics</a>
+</div></div>
+<input type='checkbox' class='nav-chkbx' id="tour-control-flow" />
+<div class="nav-tree nav-2">
+<label class="nav-label nav-2" for="tour-control-flow">Control Flow<svg viewBox="0 0 16 16" class="i-line nav-chevron">
+<path d="M 5 2 L 11 8 L 5 14" />
+</svg></label>
+<div class='nav-children'><a href="/tour/control-flow/short-circuit" class="nav-item nav-3">Short-Circuit Operators</a>
+<a href="/tour/control-flow/labels" class="nav-item nav-3">Local &amp; Foreign Labels</a>
+<a href="/tour/control-flow/iteration" class="nav-item nav-3">Iteration</a>
+</div></div>
+<input type='checkbox' class='nav-chkbx' id="tour-types-and-reflection" />
+<div class="nav-tree nav-2">
+<label class="nav-label nav-2" for="tour-types-and-reflection">Types &amp; Reflection<svg viewBox="0 0 16 16" class="i-line nav-chevron">
+<path d="M 5 2 L 11 8 L 5 14" />
+</svg></label>
+<div class='nav-children'><a href="/tour/types-and-reflection/structures" class="nav-item nav-3">Structures &amp; Reflection</a>
+<a href="/tour/types-and-reflection/user-defined-primitive-types" class="nav-item nav-3">Enums, Flags &amp; Primitives</a>
+<a href="/tour/types-and-reflection/built-in-types" class="nav-item nav-3">Built-in Types</a>
+<a href="/tour/types-and-reflection/template-types" class="nav-item nav-3">Template Types</a>
+</div></div>
+<input type='checkbox' class='nav-chkbx' id="tour-scope" />
+<div class="nav-tree nav-2">
+<label class="nav-label nav-2" for="tour-scope">Scope<svg viewBox="0 0 16 16" class="i-line nav-chevron">
+<path d="M 5 2 L 11 8 L 5 14" />
+</svg></label>
+<div class='nav-children'><a href="/tour/scope/lexical-scope" class="nav-item nav-3">Lexical Scope &amp; Shadowing</a>
+<a href="/tour/scope/implicit" class="nav-item nav-3">“implicit” Argument Passing</a>
+<a href="/tour/scope/using" class="nav-item nav-3">The “using” Keyword</a>
+</div></div>
+</div></div>
+<a href="/target-audience" class="nav-item nav-1">Who Is This For?</a>
+<a href="/bootstrap" class="nav-item nav-1">Getting Started</a>
+<a href="https://github.com/hdachev/fu" target="_blank" class="nav-item">
+                GitHub
+                <svg viewBox="0 0 16 16" class="i-line">
+                <path d="M 7 2 L 13 8 L 7 14 M 13 8 L 1 8" />
+                </svg>
+            </a>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="col-toc">
+        <div class="col-scroll">
+            <div class="col-header col-header-side"></div>
+            <div class="col-body"><a href="#universal-function-call-syntax" class="toc-item toc-2">Universal Function Call Syntax</a>
+<a href="#parentheses-are-optional" class="toc-item toc-3">Parentheses are optional</a>
+<a href="#named-arguments" class="toc-item toc-3">Named arguments</a>
+<a href="#optional-arguments" class="toc-item toc-3">Optional arguments</a>
+<a href="#disregardable-arguments" class="toc-item toc-3">Disregardable arguments</a>
+</div>
+        </div>
+    </nav>
+
+    <main class="col-main">
+        <div class="col-header">
+<h2 id="universal-function-call-syntax">
+	Universal Function Call Syntax
+</h2>
+</div>
+        <div class="col-body">
+<p>
+	Many languages make a syntactic distinction between method calls and free function calls, usually <code>a.f(b)</code> and <code>f(a, b)</code>. This can be an inconvenience when refactoring.
+</p>
+<p class='incomplete-sentence'>
+	We allow you to call any function using either syntax:
+</p>
+<pre><code><s class='c1'>fn</s> <s class='C2'>main</s>() {
+    <s class='c1'>let</s> <s class='c6'>step</s> = <s class='c5'>1</s>;
+    <s class='c1'>fn</s> <s class='C3'>increment</s>(<s class='c1'>ref</s> <s class='C1'>v</s>: <s class='C4'>int</s>)
+        <s class='C1'>v</s> += <s class='c6'>step</s>;
+
+    <s class='c1'>mut</s> <s class='C0'>ret</s> = -<s class='c5'>2</s>;
+    <s class='C3'>increment</s>(<s class='C0'>ret</s>);     <s class='c3'>// f(a)</s>
+    <s class='C0'>ret</s>.<s class='C3'>increment</s>();    <s class='c3'>// a.f()    Both are equivalent.</s>
+    <s class='c2'>return</s> <s class='C0'>ret</s>;
+}
+</code></pre>
+
+<p>
+	
+</p>
+<p>
+	Note how we appear to have privately extended <code><s class='C4'>int</s></code>, a built-in type, with a method that interacts with lexical scope.
+</p>
+<p class='incomplete-sentence'>
+	We make one distinction between the two syntaxes:
+</p>
+<ul>
+	<li>The free function call syntax only considers functions that have been declared or explicitly imported in scope.
+	</li>
+	<li>The dot call syntax also considers all <code><s class='c1'>pub</s></code> functions from the module of origin of the type of the dot-argument, and of every type it converts to.
+	</li>
+</ul>
+<h3 id="parentheses-are-optional"><a href="#parentheses-are-optional" class="h-anchor">
+	Parentheses are optional
+</a></h3>
+<p class='incomplete-sentence'>
+	Similarly, we do not require parentheses when making a call without arguments:
+</p>
+<pre><code><s class='c1'>struct</s> <s class='C4'>Dog</s> {
+    name:       <s class='C4'>string</s>;
+    dog_years:  <s class='C4'>int</s>;
+}
+
+<s class='c1'>fn</s> <s class='C2'>human_years</s>(<s class='c7'>d</s>: <s class='C4'>Dog</s>)
+    <s class='c7'>d</s>.<s class='c7'>dog_years</s> * <s class='c5'>5</s> + (<s class='c7'>d</s>.<s class='c7'>dog_years</s> > <s class='c5'>1</s> &amp;&amp; <s class='c5'>4</s>)
+                    + (<s class='c7'>d</s>.<s class='c7'>dog_years</s> > <s class='c5'>0</s> &amp;&amp; <s class='c5'>10</s>);
+
+<s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C4'>Dog</s>(<s class='c4'>"Robbie"</s>, dog_years: <s class='c5'>4</s>).<s class='C2'>human_years</s> - <s class='c5'>34</s>;
+</code></pre>
+
+<p>
+	
+</p>
+<p>
+	Note how calls to <code><s class='C0'>dog_years</s></code> and <code><s class='c6'>human_years</s></code> use the same syntax.
+</p>
+<h3 id="named-arguments"><a href="#named-arguments" class="h-anchor">
+	Named arguments
+</a></h3>
+<p class='incomplete-sentence'>
+	The example above saw us passing the parameter <code>dog_years: <s class='c5'>4</s></code> by name. An <code>:x</code> shorthand is available for the common <code>x: x</code> pattern, here <code>:<s class='C0'>dog_years</s></code> -
+</p>
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>Dog</s> {
+    name:       <s class='C4'>string</s>;
+    dog_years:  <s class='C4'>int</s>;
+}
+
+</span></span><s class='c1'>fn</s> <s class='C2'>Dog</s>(<s class='c6'>name</s>: <s class='C4'>string</s>, <s class='c6'>human_years</s>: <s class='C4'>int</s>) {
+    <s class='c1'>mut</s> <s class='C0'>dog_years</s> = <s class='c6'>human_years</s>;
+    <s class='c2'>if</s> (<s class='C0'>dog_years</s> > <s class='c5'>10</s>) <s class='C0'>dog_years</s> -= <s class='c5'>10</s>;
+    <s class='c2'>if</s> (<s class='C0'>dog_years</s> > <s class='c5'>14</s>) <s class='C0'>dog_years</s> -= <s class='c5'>4</s>;
+
+    <s class='C0'>dog_years</s> /= <s class='c5'>5</s>;
+    <s class='c2'>return</s> <s class='C3'>Dog</s>(:<s class='C0'>dog_years</s>, :<s class='c6'>name</s>);
+}
+
+<s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C2'>Dog</s>(<s class='c4'>"Robbie"</s>, human_years: <s class='c5'>34</s>).dog_years - <s class='c5'>4</s>;
+</code></pre>
+
+<p>
+	
+</p>
+<p class='incomplete-sentence'>
+	Note how:
+</p>
+<ul>
+	<li>Passing arguments by name allows you to pass them out of order;
+	</li>
+	<li>We overloaded <code><s class='C4'>Dog</s></code> with an additional initializer with a clashing signature. We are now required to use named arguments to disambiguate between the two.
+	</li>
+</ul>
+<h3 id="optional-arguments"><a href="#optional-arguments" class="h-anchor">
+	Optional arguments
+</a></h3>
+<p class='incomplete-sentence'>
+	Arguments may have default values, which are used when an argument is left unspecified:
+</p>
+<pre><code class="standalone"><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C2'>main</s>() {
+</span></span>    <s class='c1'>fn</s> <s class='C2'>approx_ellipse_perimeter</s>(<s class='c7'>a</s>: <s class='C4'>f32</s>, <s class='c7'>b</s> = <s class='c7'>a</s>)
+        <s class='c5'>2</s> * <s class='C4'>f32</s>.PI * sqrt(<s class='c5'>0.5</s> * (<s class='c7'>a</s> * <s class='c7'>a</s> + <s class='c7'>b</s> * <s class='c7'>b</s>));
+
+    assert(<s class='C2'>approx_ellipse_perimeter</s>(<s class='c5'>10</s>)
+        == <s class='C2'>approx_ellipse_perimeter</s>(<s class='c5'>10</s>, <s class='c5'>10</s>));
+<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> <s class='c5'>0</s>;
+}
+</span></span></code></pre>
+
+<p>
+	
+</p>
+<p>
+	Note that argument default expressions can access anything in <a href="/tour/scope/lexical-scope">lexical scope</a>, including preceding arguments, in this case <code><s class='c7'>b</s></code> defaults to <code><s class='c7'>a</s></code>.
+</p>
+<p class='incomplete-sentence'>
+	A shorthand is available for zero-filled defaults, here <code><s class='c6'>reverse</s>?: <s class='C4'>bool</s></code> defaults to <code><s class='c5'>false</s></code>:
+</p>
+<pre><code class="standalone"><s class='c1'>fn</s> <s class='C3'>each</s>(<s class='c1'>ref</s> <s class='c6'>array</s>: _[], fn, <s class='c6'>reverse</s>?: <s class='C4'>bool</s>)
+    <s class='c2'>for</s> (<s class='c1'>mut</s> <s class='C1'>i</s> = <s class='c5'>0</s>; <s class='C1'>i</s> &lt; <s class='c6'>array</s>.len; <s class='C1'>i</s>++) {
+        <s class='c1'>shadow</s> <s class='c1'>let</s> <s class='c7'>i</s> = <s class='c6'>reverse</s>
+            ? <s class='c6'>array</s>.len - <s class='c5'>1</s> - <s class='C1'>i</s>
+            : <s class='C1'>i</s>;
+
+        fn(<s class='c6'>array</s>[<s class='c7'>i</s>], ?:<s class='c7'>i</s>);
+    }
+
+<s class='c1'>fn</s> <s class='C2'>main</s>() {
+    <s class='c1'>mut</s> <s class='C0'>result</s> = <s class='c5'>0</s>;
+    [ <s class='c5'>1</s>, <s class='c5'>2</s>, <s class='c5'>3</s> ].<s class='C3'>each</s>(reverse: <s class='c5'>true</s>): |<s class='c6'>item</s>, <s class='c7'>i</s>|
+        (<s class='C0'>result</s> += <s class='c7'>i</s>) *= <s class='c6'>item</s>;
+
+    <s class='c2'>return</s> <s class='C0'>result</s> - <s class='c5'>14</s>;
+}
+</code></pre>
+
+<p>
+	
+</p>
+<p>
+	Off-topic, but worth mentioning, note that <code><s class='c1'>shadow</s> <s class='c1'>let</s> <s class='c7'>i</s></code> has access to the <code><s class='c1'>mut</s> <s class='C1'>i</s></code> it shadows within its initializer.
+</p>
+<h3 id="disregardable-arguments"><a href="#disregardable-arguments" class="h-anchor">
+	Disregardable arguments
+</a></h3>
+<p>
+	When thinking about optional arguments, we usually envision a function that does not require callers to provide all of its arguments. The opposite can also be useful - a generic callsite that does not require all of the arguments it provides to be used.
+</p>
+<p class='incomplete-sentence'>
+	Note how the example above uses <code>?:<s class='c7'>i</s></code> to pass the array index into the iterator block - this allows us to provide it with a block that doesn't have an <code><s class='C1'>i</s></code> argument:
+</p>
+<pre><code class="standalone"><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C2'>main</s>() {
+    <s class='c1'>fn</s> <s class='C3'>each</s>(<s class='c1'>ref</s> <s class='c6'>array</s>: _[], fn, <s class='c6'>reverse</s>?: <s class='C4'>bool</s>)
+        <s class='c2'>for</s> (<s class='c1'>mut</s> <s class='C1'>i</s> = <s class='c5'>0</s>; <s class='C1'>i</s> &lt; <s class='c6'>array</s>.len; <s class='C1'>i</s>++) {
+            <s class='c1'>shadow</s> <s class='c1'>let</s> <s class='c7'>i</s> = <s class='c6'>reverse</s>
+                ? <s class='c6'>array</s>.len - <s class='c5'>1</s> - <s class='C1'>i</s>
+                : <s class='C1'>i</s>;
+
+            fn(<s class='c6'>array</s>[<s class='c7'>i</s>], ?:<s class='c7'>i</s>);
+        }
+
+</span></span>    <s class='c1'>mut</s> <s class='C0'>result</s> = <s class='c5'>0</s>;
+    [ <s class='c5'>1</s>, <s class='c5'>2</s>, <s class='c5'>3</s> ].<s class='C3'>each</s>(reverse: <s class='c5'>true</s>): |<s class='c6'>item</s>|
+        (<s class='C0'>result</s> += <s class='c6'>item</s>) *= <s class='c6'>item</s>;
+<span class='snip-hide snip-hide-bottom'><span>
+    <s class='c2'>return</s> <s class='C0'>result</s> - <s class='c5'>23</s>;
+}
+</span></span></code></pre>
+
+<p>
+	
+</p>
+<p>
+	To protect from ambiguity and typos, we complain when both sides of the callsite have unmatched arguments.
+</p>
+</div>
+        <div class="col-foot">
+            <div class="ftlnk-pair"><a class="ftlnk next" href="/tour/syntax-and-semantics/overloading">
+    <div class="lnk-lbl">Next</div>
+    <div class="lnk-ttl">Overloading Without Ambiguity</div>
+</a><a class="ftlnk prev" href="/motivation">
+    <div class="lnk-lbl">Previous</div>
+    <div class="lnk-ttl">Motivation</div>
+</a></div>
+        </div>
+
+    </main>
+
+</div>
+
+<footer class="page-foot">
+
+    <svg viewBox="0 0 1011 999" class="logo">
+    <path class="shape" d="M0 999L245 999L245 612L395 612L395 616C387 884,498 999,766 999L1011 999L1011 383L766 383L766 773C654 773,616 736,616 624L616 383L245 383C245 283,295 233,395 233L616 233L616 0L383 0C128 0,0 128,0 383L0 999Z "></path>
+    </svg>
+
+</footer>
+
+<nav class="tb">
+    <label for="hb-chkbx" class="tb-tl tb-btn tb-burg">
+        <svg viewBox="0 0 16 16" class="i-line">
+        <path d="M 2 4 L 14 4 M 2 8 L 14 8 M 2 12 L 14 12" />
+        </svg>
+    </label>
+    <a href="/" class="tb-title"><i>The</i> Fu <i>Programming Language</i></a>
+
+    <a href="https://github.com/hdachev/fu" target="_blank" title="Github:
+The Fu Programming Language" class="tb-tr tb-btn tb-github">
+        <svg viewBox="0 1 98 98" class="i-fill">
+        <path d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" />
+        </svg>
+    </a>
+
+    <a class="tb-tr tb-btn tb-theme tb-sun needs-js">
+        <svg viewBox="0 0 32 32" class="i-fill" style="font-size: 1.25em">
+            <path d="M16,12a4,4,0,1,1-4,4,4.0045,4.0045,0,0,1,4-4m0-2a6,6,0,1,0,6,6,6,6,0,0,0-6-6Z" transform="translate(0 0.0049)"/>
+            <rect x="6.8536" y="5.3745" width="1.9998" height="4.958" transform="translate(-3.253 7.8584) rotate(-45)"/>
+            <rect x="2" y="15.0049" width="5" height="2"/>
+            <rect x="5.3745" y="23.1466" width="4.958" height="1.9998" transform="translate(-14.7739 12.6305) rotate(-45)"/>
+            <rect x="15" y="25.0049" width="2" height="5"/>
+            <rect x="23.1466" y="21.6675" width="1.9998" height="4.958" transform="translate(-10.0018 24.1514) rotate(-45)"/>
+            <rect x="25" y="15.0049" width="5" height="2"/>
+            <rect x="21.6675" y="6.8536" width="4.958" height="1.9998" transform="translate(1.5191 19.3793) rotate(-45)"/>
+            <rect x="15" y="2.0049" width="2" height="5"/>
+        </svg>
+    </a>
+
+    <a class="tb-tr tb-btn tb-theme tb-moon needs-js">
+        <svg viewBox="0 0 32 32" class="i-fill" style="font-size: 1.15em">
+            <path d="M13.5025,5.4136A15.0755,15.0755,0,0,0,25.096,23.6082a11.1134,11.1134,0,0,1-7.9749,3.3893c-.1385,0-.2782.0051-.4178,0A11.0944,11.0944,0,0,1,13.5025,5.4136M14.98,3a1.0024,1.0024,0,0,0-.1746.0156A13.0959,13.0959,0,0,0,16.63,28.9973c.1641.006.3282,0,.4909,0a13.0724,13.0724,0,0,0,10.702-5.5556,1.0094,1.0094,0,0,0-.7833-1.5644A13.08,13.08,0,0,1,15.8892,4.38,1.0149,1.0149,0,0,0,14.98,3Z"/>
+        </svg>
+    </a><a class="tb-tr tb-btn prev" href="/motivation" title="Previous:
+Motivation">
+    <svg viewBox="0 0 16 16" class="i-line">
+    <path d="M 9 2 L 3 8 L 9 14 M 3 8 L 15 8" />
+    </svg>
+</a><a class="tb-tr tb-btn next" href="/tour/syntax-and-semantics/overloading" title="Next:
+Overloading Without Ambiguity">
+    <svg viewBox="0 0 16 16" class="i-line">
+    <path d="M 7 2 L 13 8 L 7 14 M 13 8 L 1 8" />
+    </svg>
+</a></nav>
+
+</body>
+</html>

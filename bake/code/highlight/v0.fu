@@ -1,0 +1,173 @@
+import fu::src::context;
+import fu::src::module;
+import fu::src::helpers;
+import fu::src::hacks;
+import fu::src::lifetime;
+
+import style;
+import by_token;
+
+
+//
+
+fn traverseParseTree(
+    implicit module: Module,
+    fail)
+{
+    fn traverseUnsolved(n: Node)
+    {
+        for (mut i = 0; i < n.items.len; i++)
+            n.items[i].traverseUnsolved();
+
+        if (n.kind == "if"      ||
+            n.kind == "or"      ||
+            n.kind == "and"     ||
+            n.kind == "loop"    ||
+            n.kind == "jump"    || n.kind == "__far_jump"   ||
+            n.kind == "break"   || n.kind == "continue"     || n.kind == "return" ||
+            n.kind == "try")
+        {
+            applyColor(n.token, "ControlFlow");
+        }
+
+        if (n.kind == "real"    ||
+            n.kind == "int"     ||
+            n.kind == "char")
+        {
+            applyColor(n.token, "PrimitiveLiteral");
+        }
+
+        if (n.kind == "str")
+        {
+            applyColor(n.token, "StringLiteral");
+        }
+    }
+
+
+    // Go!
+
+    traverseUnsolved(module.in.parse.root || throw("What!"));
+}
+
+
+//
+
+fn traverseSolvedNodes(
+    implicit ctx: Context,
+    implicit module: Module,
+    fail)
+{
+    mut _current_globid: int;
+
+    fn nested(locid!: int) {
+        return Target(:module.modid, globid: _current_globid, :locid);
+    }
+
+    fn GET(t: Target): Overload
+    {
+        shadow let module   = ctx.modules[t.modid];
+        let globid          = t.globid;
+        let locid           = t.locid;
+
+        return locid
+            ? {
+                let ext = module.out.solve.scope.extended[globid];
+                ext.args_n_locals[ext.indexOfLocal(:locid)]
+              }
+            : module.out.solve.scope.overloads[globid - 1];
+    }
+
+    fn EXT(t: Target): Extended
+    {
+        return !t.locid
+            && ctx.modules[t.modid].out.solve.scope.extended[t.globid];
+    }
+
+    fn color(t: Target): Color
+    {
+        if (t.modid != module.modid)
+            return "Builtin";
+
+        let spec_of = t.EXT.spec_of;
+        if (spec_of && spec_of.modid != module.modid)
+            return "Builtin";
+
+        let id = 8 + ((t.locid || t.globid) * 3 & 7);
+        return id.u8.Color;
+    }
+
+    fn traverseSolved(n: SolvedNode, mut mask: Style)
+    {
+        implicit _here  = n.token;
+        mut t           = (n.kind == "call" || n.kind == "letdef" || n.kind == "fn")
+                                && n.target;
+
+        while (t)
+        {
+            let o = GET(t);
+            let cid = tryParseClosureID(id: o.name);
+            if !(cid.target)
+                break;
+
+            t = cid.target;
+        }
+
+        let o           = t && GET(t);
+        shadow let t    =
+            o.kind == "field"
+                ? n.lifetime.Lifetime_if_only(|locid| locid && (t = nested(:locid)))
+                : t;
+
+        shadow let o    = t && GET(t);
+        let ext         = t && EXT(t);
+
+        if (o)
+        {
+            if (o.kind == "var"
+                    ? o.name.len < 2 && o.name != "_"
+                    : !(o.flags & "F_USING") && !(o.flags & "F_CONVERSION"))
+            {
+                // Ignore single-letter variables -
+                //  clearly not the point of the example.
+                applyColor(n.token, "Builtin");
+            }
+            else
+            {
+                applyColor(n.token, t.color);
+            }
+        }
+
+        //
+        if (n.kind == "copy" && !n.type.is_trivial)
+            mask |= "NonTrivialCopy";
+
+        //
+        if (n.kind == "letdef")
+        {
+            traverseSolved(o.solved, mask);
+        }
+        else for (mut i = 0; i < n.items.len; i++)
+        {
+            shadow mut mask = mask;
+
+            let host_arg = ext.args.if(exists: i);
+            if (host_arg.written_to)
+                mask |= "WrittenTo";
+
+            traverseSolved(n.items[i], mask);
+        }
+
+        //
+        applyMask(_here, mask);
+    }
+
+
+    // Go!
+
+    traverseSolved(module.out.solve.root, Style());
+
+    module.out.solve.scope.overloads.each: |o, i| {
+        _current_globid = i + 1;
+        traverseSolved(o.solved && o.solved, Style());
+    };
+}

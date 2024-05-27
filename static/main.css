@@ -1,0 +1,1038 @@
+
+
+/* Reset, see https://www.joshwcomeau.com/css/custom-css-reset/ */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+* {
+    margin: 0;
+}
+
+body {
+    line-height: 1.5;
+}
+
+input, button, textarea, select {
+    font: inherit;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: break-word;
+}
+
+s {
+    text-decoration: none;
+}
+
+/* See https://kilianvalkhof.com/2022/css-html/your-css-reset-needs-text-size-adjust-probably/
+       https://piccalil.li/blog/a-more-modern-css-reset/
+
+   Without this on landscape iPhones code snippets
+    fit even less code than they do in portrait.
+*/
+html {
+    -moz-text-size-adjust: none;
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+}
+
+
+/* Root, font stack, spacing */
+
+html {
+    font-family: system-ui, sans-serif;
+/*
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+*/
+    scroll-behavior: smooth;
+}
+
+code {
+    font-family: ui-monospace, monospace;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 2em;
+    margin-bottom: var(--space);
+
+    scroll-margin-top: calc(25vh - 1em + 1rem);
+
+    font-weight: 300;
+    font-size: 1em;
+
+    color: var(--txt-top);
+}
+
+strong, em {
+    color: var(--txt-top);
+}
+
+h1 { font-size: calc(1em * 1.123 * 1.234 * 1.345 * 1.456) }
+h2 { font-size: calc(1em * 1.123 * 1.234 * 1.345) }
+h3 { font-size: calc(1em * 1.123 * 1.234) }
+h4 { font-size: calc(1em * 1.123) }
+
+h1 { font-weight: 200 }
+h2 { font-weight: 300 }
+h3 { font-weight: 400 }
+h4 { font-weight: 500 }
+h5 { font-weight: 600 }
+h6 { font-weight: 700 }
+
+p, pre, ul, ol {
+    margin: var(--space) 0;
+}
+
+p:first-child {
+    margin-top: 0;
+}
+
+ul {
+    list-style: '—   ';
+    /*list-style: '–   ';*/
+}
+
+
+/* Extra resets */
+
+a {
+    text-decoration: underline;
+    color: inherit;
+}
+
+a:where(:hover) { /* :where to decrease specificity, dont want !important below */
+    color: var(--hi-cyan);
+}
+
+.nav-item, .toc-item, .h-anchor, .ftlnk, .tb-tr, .tb-tl, .tb-title {
+    text-decoration: inherit;
+    color: inherit;
+}
+
+
+/* A three column layout - global nav, main page, local toc */
+
+html {
+    --gutter:           max(4vw, 1rem);
+    --gutter-inner:     calc(0.5 * var(--gutter));
+
+    --indent:           0rem;
+    --space:            1rem;
+
+    --tb-height:        3rem;
+    --sb-width:         min(19rem, 80vw);
+    --toc-width:        var(--sb-width);
+
+    --stroke:           2px;
+}
+
+@media (max-width: 65rem) {
+    html {
+        --gutter-inner: var(--gutter);
+    }
+}
+
+.col-nav, .col-toc {
+    --gutter: 2rem;
+
+    width: var(--sb-width);
+}
+
+
+/* Fixed columns */
+
+.col-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+}
+
+body {
+    padding-left: var(--sb-width);
+}
+
+
+/* Sticky columns */
+
+.cols {
+    display: flex;
+    flex-flow: row nowrap;
+    align-content: stretch;
+    align-items: stretch;
+}
+
+.col-main {
+    flex-grow: 1;
+
+    /* flexbox hack - without this we don't collapse when code snippets get too wide,
+        overflow: hidden also does it but breaks any stickies inside */
+    min-width: 1px;
+}
+
+/*.col-nav, */.col-toc {
+    flex-grow: 0;
+    flex-shrink: 0;
+    margin-left: calc(-1 * var(--toc-width));
+}
+
+.col-toc { order: 2 }
+
+
+/* Titlebar */
+
+.tb {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: stretch;
+    padding: 0 2rem;
+}
+
+.tb {
+    background: black;
+    color: white;
+
+    font-weight: 500;
+}
+
+.tb-tl, .tb-tr {
+    display: block;
+
+    width: var(--tb-height);
+    height: var(--tb-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tb-tl {
+    position: relative;
+    left: -1rem;
+}
+
+.tb-tr {
+    position: relative;
+    left: 1rem;
+}
+
+.tb-github {
+    font-size: 1.25em;
+}
+
+.tb-title {
+    flex-grow: 1;
+}
+
+.tb i {
+    opacity: .66;
+    font-style: normal;
+}
+
+@media (max-width: 35rem) {
+    .tb i {
+        display: none;
+    }
+}
+
+.tb-btn {
+    cursor: pointer;
+}
+
+.tb-btn:hover {
+    background: #333;
+}
+
+
+/* Equally tall header region across the three columns,
+    with room for a logotype and/or an art banner or smth */
+
+.col-header {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: flex-end;
+
+    min-height: max(10rem, 25vh);
+}
+
+
+/* The two side columns are scroll-locked */
+
+.col-scroll {
+    overflow: auto;
+    position: sticky;
+    top: 0;
+
+    height: 100vh;
+
+    padding: 0 var(--gutter);
+    padding-bottom: 4rem;
+    padding-bottom: calc(100lvh - 100svh + 1rem);
+}
+
+
+/* Nav & TOC */
+
+.nav-item, .nav-title, .toc-item, .nav-label {
+    display: block;
+    padding: 0.5em 0;
+}
+
+.nav-item, .nav-label {
+    color: var(--txt-middle);
+    font-weight: 600;
+}
+
+.nav-children .nav-item, .toc-item {
+    color: var(--txt-bottom);
+    font-weight: 400;
+}
+
+.nav-item.here, .nav-label.here {
+    color: var(--txt-top);
+}
+
+.toc-1      { font-weight: 600 }
+.toc-2      { font-weight: 500 }
+
+
+/* Main */
+
+.col-nav, .col-toc {
+    font-size: calc(1rem - 2px);
+}
+
+.col-header-side {
+    margin-top: calc(-0.5em + 2px);
+}
+
+.col-main {
+    --pad-left: var(--gutter);
+
+    --pad-right: calc(
+        max(var(--gutter), calc(100vw - 100rem))
+          + var(--toc-width));
+
+    padding-left:   var(--pad-left);
+    padding-right:  var(--pad-right);
+}
+
+
+/* X: bordered nav column */
+
+.col-nav {
+    background:             var(--bgr-page);
+    border-right: 1px solid var(--bgr-main);
+}
+
+
+/* Narrower screens, rem */
+
+.hb-chkbx, .hb-rest, .tb-burg {
+    display: none;
+}
+
+@media (max-width: 65rem) {
+
+    .tb {
+        padding-left: var(--gutter);
+    }
+
+    body {
+        padding-left: 0;
+    }
+
+    .tb-burg {
+        display: flex;
+    }
+
+    .col-nav {
+        z-index: 1;
+        transition: transform .125s ease;
+
+        border-right: .5px solid black;
+        outline: .5rem solid rgba(0, 0, 0, 0.25);
+    }
+
+
+    /* Hamburger closed - hide the sb contents so they don't
+        get picked up by the browser's "Find On Page"
+         which is bound to misscroll us on mobile */
+
+    .hb-chkbx:not(:checked)+.cols .col-nav {
+        transform: translateX(calc(-1 * var(--sb-width)));
+
+        outline: none;
+    }
+
+    .hb-chkbx:not(:checked)+.cols .col-nav .col-body {
+        display: none;
+    }
+
+
+    /* Hamburger open - cover up the rest of the page with a
+        half transparent black rectangle, which is also a <label>
+         for the checkbox, so works as a close area */
+
+    .hb-rest {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+
+        transition: background .5s ease;
+        background: rgba(0, 0, 0, 0);
+    }
+
+    .hb-chkbx:checked+.cols .hb-rest {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.25);
+        z-index: 1;
+    }
+
+
+    /* Hamburger open - parallax anim */
+
+    .cols {
+        /* Prevents unwanted horiontal scroll when .col-main is translated on iOS,
+            breaks stickies though, currently we have none but for .col-toc */
+        overflow: hidden;
+    }
+
+    .col-main {
+        transition: transform .125s ease;
+    }
+
+    .hb-chkbx:checked+.cols .col-main {
+        transform: translate(calc(var(--sb-width) * 0.25), 0);
+    }
+
+    body:has(.hb-chkbx:checked) {
+        /* Disable main body scroll when hamburger open, disorienting */
+        overflow: hidden;
+    }
+}
+
+@media (max-width: 85rem) {
+    html {
+        --toc-width: 0px;
+    }
+
+    .col-toc {
+        display: none;
+    }
+
+    .tb {
+        padding-right: var(--gutter);
+    }
+}
+
+
+/* Wider screens, rem */
+
+html {
+    /* Without this the font-size: calcs below start rounding weirdly */
+    font-size: 1rem;
+}
+
+code {
+    font-size: max(.7em,
+                   min(calc(0.5rem + 1vw),
+                       max(calc(1rem - 1px),
+                           calc(1em - 2px))));
+}
+
+@media (min-width: 45rem) {
+    .col-main {
+        font-size: calc(1rem + 1px);
+        /*
+            Again, looks great but hurts legibility.
+            font-weight: 300;
+        */
+    }
+}
+
+
+/* Wider screens, increase font size +1px steps, scales everything, hence px */
+
+@media (min-width: 1700px) {
+    html {
+        font-size: max(1em, 17px);
+        --stroke: 1.90px;
+    }
+}
+
+@media (min-width: 1900px) {
+    html {
+        font-size: max(1em, 18px);
+        --stroke: 1.80px;
+    }
+}
+
+@media (min-width: 2100px) {
+    html {
+        font-size: max(1em, 19px);
+        --stroke: 1.70px;
+    }
+}
+
+@media (min-width: 2300px) {
+    html {
+        font-size: max(1em, 20px);
+        --stroke: 1.60px;
+    }
+}
+
+@media (min-width: 2500px) {
+    html {
+        font-size: max(1em, 21px);
+        --stroke: 1.50px;
+    }
+}
+
+@media (min-resolution: 2dppx) {
+    html {
+        --stroke: 1.00px;
+    }
+}
+
+
+/* Nav tree */
+
+.nav-chkbx {
+    display: none;
+}
+
+.nav-chkbx:not(:checked) + .nav-tree .nav-children {
+    display: none;
+}
+
+.nav-label, .nav-item {
+    cursor: pointer;
+    user-select: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-chevron {
+    transform: rotate(-0.25turn);
+    transition: transform .125s;
+}
+
+.nav-chkbx:not(:checked) + .nav-tree .nav-chevron {
+    transform: rotate(+0.25turn);
+}
+
+.nav-children {
+    margin-left: 1rem;
+    --indent: 1rem;
+}
+
+.nav-children .nav-children {
+    --indent: 2rem;
+}
+
+.nav-children .nav-children .nav-children {
+    --indent: 3rem;
+}
+
+.nav-children.nav-reveal {
+    animation: .125s ease-out 0s RevealBottom;
+}
+
+.nav-item, .nav-label, .nav-group:before, .nav-group:after {
+    margin-right:   calc(-1 * var(--gutter));
+    /*padding-right:            var(--gutter);*/
+    padding-right: 1rem;
+}
+
+.nav-item, .nav-label {
+    margin-left:    calc(-1 * (var(--gutter) + var(--indent)));
+    padding-left:   calc(      var(--gutter) + var(--indent) );
+}
+
+.nav-group:before, .nav-group:after {
+    content: '';
+    display: block;
+
+    margin-top: .5rem;
+    margin-bottom: .5rem;
+    border-top: 1px solid var(--clr-borders);
+}
+
+.nav-label:hover, .nav-item:hover {
+    background: var(--clr-hovers);
+}
+
+.nav-item.here,
+.nav-chkbx:not(:checked) + .nav-tree .nav-label.here {
+    background: var(--bgr-active);
+}
+
+
+/* Widgets & details */
+
+.h-anchor:after {
+    content: '#';
+    visibility: hidden;
+    font-weight: 100;
+}
+
+.h-anchor:hover:after {
+    visibility: visible;
+}
+
+
+/* Widgets / Code Snippets */
+
+code {
+    /* if code contains spaces, best h-pad is 0.5rem,
+        generally 0.25rem is enough,
+         ideally if first/last node none to the left/right. */
+
+    padding: 0.2rem 0.4rem;
+    margin: -0.25rem 0.1rem;
+
+    color: var(--txt-top);
+}
+
+code.first-node {
+    margin-left: -0.5rem;
+}
+
+pre code {
+    display: block;
+
+    padding: .5rem var(--gutter-inner);
+    margin:   0rem calc(-1 * var(--gutter-inner));
+
+    overflow-x: auto;
+
+    position: relative;
+}
+
+
+/* Widgets / Code Snippets / Collapsed */
+
+.snip-hide span {
+    display: none;
+}
+
+.snip-hide:after {
+    content: "⋯";
+}
+
+.snip-hide {
+    position: absolute;
+    right: 0;
+    padding: .5rem 1rem;
+    cursor: pointer;
+}
+
+.snip-hide-top {
+    top: 0;
+}
+
+.snip-hide-bottom {
+    bottom: 0;
+}
+
+@media (pointer: fine) {        /* Mouse: hover & active feedback */
+    .snip-hide:hover {
+        background: var(--clr-hovers);
+    }
+
+    .snip-hide:active {
+        background: var(--clr-borders);
+    }
+
+    @media (max-width: 65rem) {
+        .snip-hide {
+            padding-right: calc(var(--gutter) + 0.25em);
+        }
+    }
+}
+
+@media (pointer: coarse) {      /* Touch: bigger buttons */
+    .snip-hide {
+        font-size: max(1em, 1rem);
+    }
+}
+
+
+/* Widgets / Code Snippets / Expand anim */
+
+.snip-reveal {
+    display: block;
+}
+
+.snip-reveal-top {
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.snip-reveal-bottom {
+    padding-top: 0;
+    margin-top: 0;
+}
+
+.snip-reveal>span {
+    display: block;
+}
+
+.snip-reveal-top>span {
+    animation: .125s ease-out 0s RevealTop;
+}
+
+.snip-reveal-bottom>span {
+    animation: .125s ease-out 0s RevealBottom;
+}
+
+@keyframes RevealTop {
+    from { transform: translate(0, -0.25rem); opacity: 0.0 }
+    to   { transform: translate(0, 0); opacity: 1.0 }
+}
+
+@keyframes RevealBottom {
+    from { transform: translate(0, 0.25rem); opacity: 0.0 }
+    to   { transform: translate(0, 0); opacity: 1.0}
+}
+
+
+/* Main page footer */
+
+.ftlnk-pair {
+    display: flex;
+    flex-flow: row-reverse wrap;
+    margin: 4rem calc(-1 * var(--gutter-inner));
+    margin-bottom: 0;
+}
+
+.ftlnk {
+    flex-grow: 1;
+    flex-basis: 10rem;
+
+    min-height: 6em;
+    padding: 1rem var(--gutter-inner);
+    padding-bottom: 4rem;
+}
+
+.ftlnk.next {
+    text-align: right;
+}
+
+.lnk-lbl {
+    font-size: 0.75em;
+    padding-top: .25rem;
+    color: var(--txt-bottom);
+}
+
+.lnk-ttl {
+    font-size: 1.25em;
+    line-height: 1.25em;
+    padding: .25rem 0;
+    color: var(--txt-top);
+}
+
+
+/* Code Highlighting */
+
+.c0 { color: red; }
+.c1 { /*fn, let, mut, ref*/ font-weight: bold }
+.c2 { /*for, if, else*/     font-weight: bold }
+.c3 { /*comments*/          color: #777; font-style: italic }
+
+.c4 { /*StringLiteral*/     color: var(--hi-red) }
+
+.c5 { /*PrimitiveLiteral*/  color: var(--hi-cyan) }
+.c6 { /*MajorConstant*/     color: var(--hi-blue) }
+.c7 { /*MinorConstant*/     color: var(--hi-blue) }
+
+.C0 { /*MajorVariable*/     color: var(--hi-orange) }
+.C1 { /*MinorVariable*/     color: var(--hi-orange) }
+
+.C2 { /*PureFn*/            color: var(--hi-cyan) }
+.C3 { /*ImpureFn*/          color: var(--hi-red) }
+
+.C4 { /*Type*/              color: var(--hi-green) }
+.C5 { /*Label*/             color: var(--hi-yellow) }
+
+/* old stuff */
+
+.s-W {
+    text-decoration: underline;
+    text-underline-position: under;
+}
+
+
+/* Language specific */
+
+code.sh {
+    color: var(--txt-top);
+}
+
+code.output {
+    color: var(--txt-bottom);
+    margin-top: calc(var(--space) * -1);
+    padding-top: var(--space);
+    border-top: 1px solid var(--clr-borders);
+}
+
+
+/* Print fixes */
+
+@media print {
+    .col-main {
+        /* safari doesn't clear these */
+        margin-left: 0;
+        margin-right: 0;
+        padding: 0;
+    }
+
+    .tb, .col-nav, .col-toc, .col-foot {
+        display: none;
+    }
+
+    .col-header {
+        min-height: 0;
+    }
+
+    .snip-hide {
+        display: none;
+    }
+
+    pre code {
+        margin: 0;
+        padding: 0;
+        border: none;
+    }
+
+    p, code, ul, ol, h1, h2, h3, h4, h5, h6 {
+        break-inside: avoid;
+    }
+
+    p.incomplete-sentence, h1, h2, h3, h4, h5, h6 {
+        break-after: avoid;
+    }
+
+    /* Hack - avoid headings halfway though a page or below */
+    h1::after, h2::after, h3::after, h4::after, h5::after, h6::after {
+        content: "";
+        display: block;
+        height: 50vh;
+        margin-bottom: -50vh;
+    }
+
+    .incomplete-sentence::after {
+        content: "";
+        display: block;
+        height: 25vh;
+        margin-bottom: -25vh;
+    }
+}
+
+
+/* Icons */
+
+.i-line, .i-fill {
+    height: 1em;
+}
+
+.i-line {
+    stroke-width: var(--stroke);
+    stroke: currentColor;
+    fill: none;
+}
+
+.i-fill {
+    fill-rule: evenodd;
+    clip-rule: evenodd;
+    stroke: none;
+    fill: currentColor;
+}
+
+
+/* Footer */
+
+body {
+    background: black;
+    color: var(--txt-main);
+}
+
+.cols {
+    position: relative;
+}
+
+.cols:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3rem;
+
+    background: linear-gradient(180deg,
+        rgba(0,0,0, 0.933)  0%, rgba(0,0,0, 0.933) 25%,
+        rgba(0,0,0, 0.866) 25%, rgba(0,0,0, 0.866) 50%,
+        rgba(0,0,0, 0.666) 50%, rgba(0,0,0, 0.666) 75%,
+        rgba(0,0,0, 0.333) 75%, rgba(0,0,0, 0.333) 100%);
+}
+
+.page-foot {
+    background: black;
+    color: white;
+
+    padding: var(--gutter);
+    padding-top: 8rem;
+    padding-bottom: 2rem;
+
+    background: linear-gradient(0deg,
+        black              0%,  black              60%,
+        rgba(0,0,0, 0.933) 60%, rgba(0,0,0, 0.933) 70%,
+        rgba(0,0,0, 0.866) 70%, rgba(0,0,0, 0.866) 80%,
+        rgba(0,0,0, 0.666) 80%, rgba(0,0,0, 0.666) 90%,
+        rgba(0,0,0, 0.333) 90%, rgba(0,0,0, 0.333) 100%),
+
+        var(--bgr-main);
+}
+
+.logo {
+    max-width: 3rem;
+    fill: currentColor;
+}
+
+
+/* Move page footer down when article shorter than one page */
+
+.col-main {
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+.col-body {
+    flex-grow: 1;
+}
+
+
+/* Gray main background */
+
+.cols {
+    background: var(--bgr-main);
+}
+
+code, .ftlnk {
+    background: var(--bgr-box);
+}
+
+.ftlnk {
+    background: var(--bgr-main);
+    border-top: 1px solid var(--clr-borders)
+}
+
+.ftlnk:hover {
+    background: var(--bgr-box);
+}
+
+
+/* Light/dark theme */
+
+.tb-moon { display: none }
+.tb-sun  { display: flex }
+
+html, .light {
+    color-scheme:       light;
+
+    --bgr-page:         #fff;
+    --bgr-main:         #eee;
+    --bgr-box:          #fff;
+    --bgr-active:       #ddd;
+
+    --clr-hovers:       #eee;
+    --clr-borders:      #ddd;
+
+    --txt-top:          #000;
+    --txt-main:         #000;
+    --txt-middle:       #444;
+    --txt-bottom:       #444;
+
+    --hi-blue:          #00a;
+    --hi-cyan:          #08f;
+    --hi-red:           #e40;
+    --hi-orange:        #a00;
+    --hi-green:         #1a2;
+    --hi-yellow:        #909;
+}
+
+@media (prefers-color-scheme: dark) {
+
+    .tb-moon { display: flex }
+    .tb-sun  { display: none }
+
+    html {
+        color-scheme:       dark;
+
+        --bgr-page:         #111;
+        --bgr-main:         #222;
+        --bgr-box:          #111;
+        --bgr-active:       #333;
+
+        --clr-hovers:       #222;
+        --clr-borders:      #333;
+
+        --txt-top:          #fff;
+        --txt-main:         #ccc;
+        --txt-middle:       #ccc;
+        --txt-bottom:       #999;
+
+        --hi-blue:          #39f;
+        --hi-cyan:          #0cf;
+        --hi-red:           #f53;
+        --hi-orange:        #fb0;
+        --hi-green:         #9c0;
+        --hi-yellow:        #ff0;
+    }
+}
+
+.dark {
+        color-scheme:       dark;
+
+        --bgr-page:         #111;
+        --bgr-main:         #222;
+        --bgr-box:          #111;
+        --bgr-active:       #333;
+
+        --clr-hovers:       #222;
+        --clr-borders:      #333;
+
+        --txt-top:          #fff;
+        --txt-main:         #ccc;
+        --txt-middle:       #ccc;
+        --txt-bottom:       #999;
+
+        --hi-blue:          #39f;
+        --hi-cyan:          #0cf;
+        --hi-red:           #f53;
+        --hi-orange:        #fb0;
+        --hi-green:         #9c0;
+        --hi-yellow:        #ff0;
+}
+
+.light .tb-moon { display: none }
+.light .tb-sun  { display: flex }
+
+.dark .tb-moon  { display: flex }
+.dark .tb-sun   { display: none }

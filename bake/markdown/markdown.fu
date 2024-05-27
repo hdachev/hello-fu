@@ -1,0 +1,1296 @@
+
+enum K: u8
+{
+    Document = 0;
+
+    ////////////////////////////////////////////////////////////////
+    // Container block items - contain other blocks.
+
+    BlockQuote;
+
+    OrderedList;
+    UnorderedList;
+
+    ListItem;
+
+    ////////////////////////////////////////////////////////////////
+    // Leaf block items - cannot contain other blocks.
+
+    H1; H2; H3; H4; H5; H6;
+
+    Break;
+    Paragraph;
+
+    CodeBlock;
+
+    ////////////////////////////////////////////////////////////////
+    // Inline items - cannot contain blocks.
+
+    Em1; Em2; Em3;
+
+    CodeSpan;
+
+    Link; Image;
+
+    ////////////////////////////////////////////////////////////////
+    // Currently, we'll keep plaintext snippets aside.
+
+    Plaintext;
+}
+
+fn isInline(k: K)           k >= "Em1";
+fn isBlock(k: K)            k && !k.isInline;
+
+fn isContainerBlock(k: K)   k >= "BlockQuote" && k <= "ListItem";
+fn isLeafBlock(k: K)        k.isBlock && !k.isContainerBlock;
+
+fn isList(k: K)             k == "OrderedList" || k == "UnorderedList";
+
+fn headingLevel(k: K)       k.isHeading && k.int - K.H1.int + 1;
+fn isHeading(k: K)          k >= "H1"   && k <= "H6";
+fn isEmphasis(k: K)         k >= "Em1"  && k <= "Em3";
+
+fn emphasisLevel(k: K)      k.isEmphasis && k.int - K.Em1.int + 1;
+fn emLevelIntoKind(l: int)  l <= 1  ? K.Em1 :
+                            l == 2  ? K.Em2 :
+                                      K.Em3 ;
+
+fn isCode(k: K)             k == "CodeBlock" || k == "CodeSpan";
+
+
+//
+
+primitive ArrayHandle:      int;
+
+fn indexIntoHandle(index: int)
+    ArrayHandle(-index - 1);
+
+fn handleIntoIndex(value: ArrayHandle)
+    -value.int - 1;
+
+
+//
+
+type Plaintext          = string;
+
+flags CodeSnippetFlags
+{
+    CodeSpan;
+    CodeBlock;
+
+    DoNotEscape;
+    DoNotWrap;
+}
+
+struct CodeSnippet
+{
+    flags:                  CodeSnippetFlags;
+    code:                   Plaintext;
+    annots?:                string;
+}
+
+struct Reference
+{
+    href:                   string;
+    title:                  Plaintext;
+}
+
+struct Anchor
+{
+    kind:                   K;
+    using link:             Reference;
+}
+
+struct Node
+{
+    using kind:             K;
+    bullet?:                byte;
+    handle?:                ArrayHandle;
+    items?:                 Node[];
+}
+
+struct Document
+{
+    // Putting all the atoms aside here,
+    //  so they can receive whatever properties they need without weighing down the main tree,
+    //   and so they're addressable for simpler processing when you don't care about the document hierarchy.
+    //
+    toc:                    Anchor[];
+    plaintext:              Plaintext[];
+    links:                  Reference[];
+    images:                 Reference[];
+    code_snippets:          CodeSnippet[];
+
+    // Finally, the document hierarchy.
+    //
+    root_node:              Node;
+}
+
+
+// We'll be following CommonMark's parser structure here,
+//  see https://spec.commonmark.org/0.31.2/#appendix-a-parsing-strategy
+//
+// > Parsing has two phases:
+// >
+// > 1. In the first phase, lines of input are consumed
+// >     and the block structure of the document —
+// >      its division into paragraphs, block quotes, list items, and so on
+// >       — is constructed.
+// >
+// >    Text is assigned to these blocks but not parsed.
+// >    Link reference definitions are parsed and a map of links is constructed.
+// >
+// > 2. In the second phase, the raw text contents of paragraphs and headings
+// >     are parsed into sequences of Markdown inline elements
+// >      (strings, code spans, links, emphasis, and so on),
+// >       using the map of link references constructed in phase 1.
+
+
+// Phase 1: parse block structure,
+//  collect reference links & images,
+//   leaving inline stuff unparsed.
+
+primitive LogicalIndent:    u16 {
+    MAX = 0xffff;
+};
+
+let INDENT_CODE_BLOCK       = 4.LogicalIndent;
+let INDENT_TAB              = 4.LogicalIndent;
+
+primitive LeadingNewlines:  int;
+
+struct IndentPair
+{
+    inner:                  LogicalIndent;
+    outer:                  LogicalIndent;
+}
+
+struct Fence
+{
+    true char:              byte;
+    len:                    u8;
+};
+
+struct LinePrefix
+{
+    kind:                   K;
+    bullet?:                byte;
+    fence?:                 Fence;
+    indent:                 IndentPair;
+}
+
+struct OpenBlock
+{
+    using node:             Node;
+    indent:                 IndentPair;
+    must_remain_loose?:     bool;
+    fence?:                 Fence;
+}
+
+struct PhaseOneResult_BlockStructure
+{
+    // reference_links:        hash::Map(string, int);
+    // reference_images:       hash::Map(string, int);
+    raw_plaintexts:         string[];
+    code_snippets:          CodeSnippet[];
+
+    root_node:              Node;
+}
+
+fn PhaseOne_parseBlockStructure(doc: byte[..]): PhaseOneResult_BlockStructure
+{
+    using mut result: PhaseOneResult_BlockStructure;
+
+
+    // Closing & post-processing blocks (loose lists -> tight lists).
+
+    mut open_blocks         = [ OpenBlock() ];
+
+    fn closeAndPostProcessBlocks(until: int)
+    {
+        for (mut i = open_blocks.len; i --> until; )
+        {
+            ref block = open_blocks[i];
+
+            // Decide on loose vs tight lists.
+            if (block.kind.isList) :MAKE_TIGHT
+            {
+                if (!block.must_remain_loose)
+                {
+                    ref items = block.items;
+
+                    items.each: |ref item|
+                        if (item.items.len != 1 || item.items[0].kind != "Paragraph")
+                            break :MAKE_TIGHT;
+
+                    items.each: |ref item| {
+                        let k = item.kind;
+                        let b = item.bullet;
+
+                        item = item.items.only;
+                        item.kind   = k;
+                        item.bullet = b;
+                    }
+                }
+            }
+
+            mut node: Node;
+            swap(node, block.node);
+
+            ref parent = open_blocks[i - 1].node;
+            assert(parent.kind == "Document"
+                || parent.kind.isContainerBlock);
+
+            parent.items ~= node;
+        }
+
+        open_blocks.shrink(until);
+    }
+
+
+    //
+
+    mut doc_offset      = 0;
+
+
+    // TODO consume front matter.
+
+
+    // Consume leading whitespace.
+
+    while (doc_offset < doc.len && doc[doc_offset] < ' ')
+        doc_offset++;
+
+
+    //
+
+    for (;;)
+    {
+        mut indent:         LogicalIndent;
+        mut leading_nls:    LeadingNewlines;
+
+        let line            = doc.consumeNonEmptyLine(:indent, :leading_nls, :doc_offset);
+        if (!line)
+            break;
+
+        mut line_offset0    = 0;
+        mut line_offset     = 0;
+        mut prefix          = LinePrefix();
+
+        fn consumeNextLinePrefix()
+        {
+            line_offset0    = line_offset;
+
+            if (prefix)
+                indent      = prefix.indent.inner;
+
+            prefix          = consumeNextLinePrefix(:line, :line_offset, outer_indent: indent);
+
+            if (!prefix && !leading_nls)
+            {
+                // Lazy continuation lines.
+                let last = open_blocks.last;
+                if (last.kind == "Paragraph")
+                    indent = last.indent.inner;
+            }
+        }
+
+        consumeNextLinePrefix();
+
+        // See https://spec.commonmark.org/0.31.2/#phase-1-block-structure:
+        //
+        // > First we iterate through the open blocks,
+        // >  starting with the root document,
+        // >   and descending through last children down to the last open block.
+        // >
+        // > Each block imposes a condition that the line must satisfy if the block is to remain open.
+        // >  - For example, a block quote requires a > character.
+        // >  - A paragraph requires a non-blank line.
+        // >
+        // > In this phase we may match all or just some of the open blocks.
+        // >  But we cannot close unmatched blocks yet,
+        // >   because we may have a lazy continuation line.
+        //
+        mut unmatched_start = open_blocks.len;
+        mut max_indent      = LogicalIndent();
+
+        for (mut i = 1; i < open_blocks.len; i++)
+        {
+            ref block       = open_blocks[i];
+
+            let max_indent0 = max_indent;
+            max_indent      = block.indent.inner;
+
+            :OK_PATH
+            {
+                // For a BlockQuote to continue,
+                //  the line must lead with an `>` at the correct indentation.
+                //
+                if (block.kind == "BlockQuote")
+                {
+                    if (prefix.kind == "BlockQuote"
+                            && block.indent.outer == indent
+                            && !leading_nls)
+                    {
+                        // Ok! Handle the > prefix.
+                        continue consumeNextLinePrefix();
+                    }
+
+                    break :OK_PATH;
+                }
+
+                // For a list to continue,
+                //  the indent & bullet must match,
+                //   else the newline must be indented enough to be nested inside.
+                //
+                if (block.isList)
+                {
+                    if (indent >= block.indent.inner ||
+                        indent == block.indent.outer
+                            && block.kind   == prefix.kind
+                            && block.bullet == prefix.bullet)
+                    {
+                        if (leading_nls)
+                            block.must_remain_loose = true;
+
+                        // Ok!
+                        continue;
+                    }
+
+                    break :OK_PATH;
+                }
+
+                if (block.kind == "ListItem" || block.kind == "CodeBlock")
+                {
+                    if (block.fence)
+                    {
+                        if (prefix.fence == block.fence)
+                        {
+                            // See, here we're doing it in reverse,
+                            //  handle the fence prefix and close this block.
+                            //
+                            consumeNextLinePrefix();
+
+                            break :OK_PATH;
+                        }
+
+                        // Backoff, give back whatever unconsumed prefix
+                        //  (e.g. list item) we have buffered.
+                        //
+                        if (prefix)
+                        {
+                            line_offset     = line_offset0;
+                            indent          = prefix.indent.outer;
+                            prefix          = LinePrefix();
+                        }
+
+                        max_indent      = "MAX";
+
+                        // Ok!
+                        continue;
+                    }
+
+                    if (indent >= block.indent.inner)
+                    {
+                        if (block.kind == "CodeBlock")
+                        {
+                            max_indent      = "MAX";
+                        }
+
+                        // Ok!
+                        continue;
+                    }
+
+                    break :OK_PATH;
+                }
+
+                //
+                if (block.kind == "Paragraph")
+                {
+                    // Leading newlines already dealt with above.
+                    if (!prefix && !leading_nls)
+                        continue;
+
+                    break :OK_PATH;
+                }
+
+                // Headings & co,
+                //  single line stuff.
+                //
+                break :OK_PATH;
+            }
+
+            // Not :OK_PATH
+            max_indent      = max_indent0;
+            unmatched_start = i;
+
+            break;
+        }
+
+        //
+        if (!prefix && max_indent < "MAX")
+        {
+            if (indent >= max_indent + INDENT_CODE_BLOCK)
+            {
+                prefix = LinePrefix(
+                    kind:           "CodeBlock",
+                    indent:         IndentPair(
+                        outer:          max_indent,
+                        inner:          indent));
+            }
+        }
+
+        // See https://spec.commonmark.org/0.31.2/#phase-1-block-structure:
+        //
+        // > Next, after consuming the continuation markers for existing blocks,
+        // >  we look for new block starts (e.g. > for a block quote).
+        // >
+        // > If we encounter a new block start, we close any blocks unmatched in step 1,
+        // >  before creating the new block as a child of the last matched container block.
+
+        if (unmatched_start < open_blocks.len)
+        {
+            // Ensure we close a trailing Paragraph.
+            if (unmatched_start > 1)
+                if (open_blocks[unmatched_start - 1].isLeafBlock)
+                    unmatched_start--;
+
+            closeAndPostProcessBlocks(unmatched_start);
+
+            leading_nls = 0;
+        }
+
+        while (prefix)
+        {
+            let isList = prefix.kind.isList;
+
+            if (!isList || !open_blocks.last.isList)
+                open_blocks ~= OpenBlock(
+                    indent:     prefix.indent,
+                    fence:      prefix.fence,
+                    node:       Node(
+                        kind:       prefix.kind,
+                        bullet:     prefix.bullet));
+
+            if (isList)
+                open_blocks ~= OpenBlock(
+                    indent:     prefix.indent,
+                    node:       Node(
+                        kind:       K.ListItem));
+
+            consumeNextLinePrefix();
+        }
+
+        // Ensure we always have a leaf block,
+        //  ListItems, BlockQuotes & co need a Paragraph to hold their plaintexts & inlines.
+        //
+        ref current_leaf =
+        {
+            :CURRENT_LEAF
+            {
+                ref current_leaf = open_blocks.last;
+                if (current_leaf.isLeafBlock)
+                    break :CURRENT_LEAF current_leaf;
+
+                open_blocks ~= OpenBlock(
+                    indent:     IndentPair(indent, indent),
+                    node:       Node(
+                        kind:       "Paragraph"));
+
+                break :CURRENT_LEAF open_blocks.last;
+            }
+        };
+
+        mut plaintext = "";
+
+        // Newlines we don't want to preserve are discarded above.
+        for (mut i = 0; i < leading_nls.int; i++)
+            plaintext ~= '\n';
+
+        // Keep extra indent, past block inner.
+        for (mut i = current_leaf.indent.inner; i < indent; i++)
+            plaintext ~= ' ';
+
+        mut end = line.len;
+        if (current_leaf.isHeading)
+        {
+            // Trim trailing hashes from ATX headers.
+            while (end > line_offset)
+            {
+                let c = line[end - 1];
+                if !(c == ' ' || c == '\t' || c == '#')
+                    break;
+
+                end--;
+            }
+        }
+        else
+        {
+            // Trim trailing whitespace.
+            while (end > line_offset)
+            {
+                let c = line[end - 1];
+                if !(c == ' ' || c == '\t')
+                    break;
+
+                end--;
+            }
+        }
+
+        // Keep the content and proceed.
+        plaintext ~= line[line_offset .. end];
+
+        if (current_leaf.kind == "CodeBlock")
+        {
+            if (!current_leaf.handle)
+            {
+                current_leaf.handle = code_snippets.len.indexIntoHandle;
+
+                mut snippet = CodeSnippet();
+
+                ref which = current_leaf.fence
+                    ? snippet.annots
+                    : snippet.code;
+
+                which = plaintext;
+
+                code_snippets.push(snippet);
+            }
+            else
+            {
+                ref p = code_snippets[current_leaf.handle.handleIntoIndex].code;
+                if (p) p ~= '\n';
+                p ~= plaintext;
+            }
+        }
+        else if (plaintext)
+        {
+            if (!current_leaf.handle)
+            {
+                current_leaf.handle = raw_plaintexts.len.indexIntoHandle;
+                raw_plaintexts.push(plaintext);
+            }
+            else
+            {
+                ref p = raw_plaintexts[current_leaf.handle.handleIntoIndex];
+                p ~= '\n';
+                p ~= plaintext;
+            }
+        }
+    }
+
+
+    //
+
+    closeAndPostProcessBlocks(1);
+    swap(root_node, open_blocks.only.node);
+    return result;
+}
+
+fn consumeNextLinePrefix(
+    line:               byte[..],
+    ref line_offset:    int,
+    outer_indent:       LogicalIndent)
+{
+    shadow ref line = line[line_offset ..];
+    if (!line)
+        return [];
+
+    mut inner_indent = outer_indent;
+
+    fn indent() = IndentPair(outer: outer_indent, inner: inner_indent);
+
+    let c = line.first;
+    if (c == '#')
+    {
+        // Account for the leading pound.
+        inner_indent       += 1;
+
+        // Trying parsing this as an ATX header.
+        mut level_base_zero = 0;
+
+        for (mut i = 1; i < line.len; i++)
+        {
+            shadow let c = line[i];
+            if (c == '#')
+            {
+                inner_indent++;
+                level_base_zero++;
+                continue;
+            }
+
+            if (c == ' ' || c == '\t')
+            {
+                inner_indent += c == '\t' ? INDENT_TAB : 1;
+                continue;
+            }
+
+            // Success!
+            line_offset += i;
+
+            let kind = level_base_zero < 6
+                ? (level_base_zero + K.H1.int).u8.K
+                : K.H6;
+
+            return LinePrefix(:kind, :indent);
+        }
+    }
+    else if (c == '-' || c == '+' || c == '*' || c == '>')
+    {
+        // Try parsing as an unordered item.
+        let bullet          = c;
+        mut has_leading_ws  = false;
+
+        // Account for the bullet.
+        inner_indent       += 1;
+
+        for (mut i = 1; i < line.len; i++)
+        {
+            shadow let c = line[i];
+            if (c == '\t' || c == ' ')
+            {
+                has_leading_ws  = true;
+                inner_indent   += c == '\t' ? INDENT_TAB : 1;
+            }
+            else
+            {
+                // We want to see at least one whitespace character,
+                //  else we fail.
+                //
+                if (!has_leading_ws)
+                    break;
+
+                // Success!
+                line_offset += i;
+
+                return LinePrefix(
+                    :indent, :bullet,
+                    kind: bullet == '>' ? "BlockQuote"
+                                        : "UnorderedList");
+            }
+        }
+
+        // Empty line with a '>'.
+        if (bullet == '>' && (has_leading_ws || line.len == 1))
+        {
+            line_offset += line.len;
+            return LinePrefix(:indent, :bullet, kind: "BlockQuote");
+        }
+    }
+    else if (c >= '0' && c <= '9')
+    {
+        // A bit more complicated here -
+        //  we begin by consuming digits,
+        //   then a single dot,
+        //    then we ingest whitespace.
+        mut state0          = 1;
+
+        // Account for the leading digit.
+        inner_indent       += 1;
+
+        for (mut i = 1; i < line.len; i++)
+        {
+            shadow let c    = line[i];
+
+            let state1      = c >= '0' && c <= '9'  ? 1
+                            : c == '.'              ? 2
+                            : c == '\t' || c == ' ' ? 3
+                            : 0;
+
+            if (state1 && state1 >= state0)
+            {
+                inner_indent   += c == '\t' ? INDENT_TAB : 1;
+
+                // We don't want more than a single dot.
+                state0          = state1 == 2   ? 3
+                                                : state1;
+            }
+            else if (state0 == 3)
+            {
+                // Success!
+                line_offset += i;
+
+                return LinePrefix(kind: "OrderedList", :indent);
+            }
+        }
+    }
+    else if (c == '`' || c == '~')
+    {
+        // Try parsing as a fenced code block.
+        mut len = 1;
+        for (; len < line.len; len++)
+            if (line[len] != c)
+                break;
+
+        if (len >= 3)
+        {
+            line_offset += len;
+
+            return LinePrefix(kind: "CodeBlock", :indent,
+                fence: Fence(char: c, len: len > 255 ? 255 : len.u8));
+        }
+    }
+
+    // Fail!
+    return [];
+}
+
+fn consumeNonEmptyLine(
+    doc:                byte[..],
+    ref doc_offset:     int,
+
+    ref indent:         LogicalIndent,
+    ref leading_nls:    LeadingNewlines)
+{
+    while (doc_offset < doc.len)
+    {
+        if (let ret = consumeLine(:doc, :doc_offset, :indent))
+            return ret;
+
+        leading_nls++;
+    }
+
+    return [];
+}
+
+fn consumeLine(
+    doc:                byte[..],
+    ref doc_offset:     int,
+    ref indent:         LogicalIndent)
+{
+    mut ws_only         = true;
+    mut indent_end      = doc_offset;
+    mut content_end     = 0;
+
+    for (mut i = doc_offset; i < doc.len; i++)
+    {
+        mut c = doc[i];
+
+        if (c == '\n')
+        {
+            doc_offset      = i + 1;
+
+            return content_end > indent_end
+                && doc[indent_end .. content_end];
+        }
+        else if (c <= ' ')
+        {
+            if (ws_only)
+            {
+                indent         += c == '\t' ? INDENT_TAB : 1;
+                indent_end      = i + 1;
+            }
+        }
+        else :NOT_WHITESPACE
+        {
+            ws_only         = false;
+            content_end     = i + 1;
+        }
+    }
+
+    doc_offset          = doc.len;
+
+    return [];
+}
+
+
+// Phase 2: parse inline structure,
+//  and resolve reference links & images.
+
+fn PhaseTwo_parseInlineStructure(mut tree: PhaseOneResult_BlockStructure): Document
+{
+    mut doc: Document;
+
+    swap(doc.code_snippets, tree.code_snippets);
+
+    fn visit(ref node: Node)
+    {
+        node.items.each(.visit);
+
+        if (node.kind == "CodeBlock")
+        {
+            // Just checking.
+            assert(node.handle.handleIntoIndex < doc.code_snippets.len);
+
+            // Otherwise do nothing.
+            // ...
+        }
+        else if (node.handle)
+        {
+            let pt_index    = node.handle.handleIntoIndex;
+            assert(pt_index.unsigned < tree.raw_plaintexts.len.unsigned && !node.items);
+
+            mut plaintext: string;
+            swap(plaintext, tree.raw_plaintexts[pt_index]);
+
+            node.handle     = 0;
+            node.items      = parseInlineStructure(:tree, :doc, :plaintext);
+
+            if (node.isHeading)
+            {
+                let title       = flattenPlaintext(doc, node.items);
+
+                node.handle     = doc.toc.len.indexIntoHandle;
+                doc.toc        ~= Anchor(:node.kind,
+                    Reference(href: titleIntoFragmentHref(:title), :title));
+            }
+        }
+    }
+
+    visit(tree.root_node);
+
+    //
+    swap(doc.root_node, tree.root_node);
+    return doc;
+}
+
+fn parseInlineStructure(
+    mut plaintext:      string,
+    lax ref tree:       PhaseOneResult_BlockStructure,
+    ref doc:            Document): Node[]
+{
+    using flags Side:   u8
+    {
+        MaybeOpens
+        MaybeCloses
+    }
+
+    primitive RunLen:   u8;
+
+    enum Role:          u8
+    {
+        Unmatched           = 0
+        Opens
+        Closes
+    }
+
+
+    //
+
+    primitive TaggedHandle: int;
+
+    fn isTaggedHandle(value: TaggedHandle)
+        value > 0;
+
+    fn isDelimiterBackref(value: TaggedHandle)
+        value < 0;
+
+    fn indexIntoTaggedHandle(index: int)
+        TaggedHandle(index + 1);
+
+    fn taggedHandleIntoIndex(value: TaggedHandle)
+        value.int - 1;
+
+    fn indexIntoDelimiterBackref(index: int)
+        TaggedHandle(-index - 1);
+
+    fn delimiterBackrefIntoIndex(value: TaggedHandle)
+        -value.int - 1;
+
+
+    //
+
+    struct Delimiter
+    {
+        kind:           K;
+        bullet:         byte;
+        role?:          Role;
+
+        start:          int;
+        end:            int;
+        handle?:        TaggedHandle;
+    }
+
+    mut open_spans:     int[];
+    mut delims:         Delimiter[];
+
+    :OUTER
+    for (mut i = 0; i < plaintext.len; i++)
+    {
+        let c           = plaintext[i];
+
+        //
+        mut opener      = byte();
+        mut side        = c == '*' || c == '`'
+                        ? { opener = c; MaybeOpens | MaybeCloses }
+                            : c == '[' || c == '('
+                            ? { MaybeOpens }
+                                : c == ']' ? { opener = '['; MaybeCloses }
+                                : c == ')' ? { opener = '('; MaybeCloses }
+                                : [];
+        if (!side)
+            continue;
+
+        // Preceding whitespace or punctuation.
+        mut bang        = false;
+        mut prev        = i >= 1 && plaintext[i - 1];
+
+        if (c == '[' && prev == '!')
+        {
+            bang        = true;
+            prev        = i >= 2 && plaintext[i - 2];
+        }
+
+        // Runs of stars or backticks.
+        mut next        = i < plaintext.len - 1 && plaintext[i + 1];
+
+        // Symmetric open-close pairs take
+        //  leading/trailing whitespace/punctuation into account.
+        if (c == opener)
+        {
+            inline fn definitely_not_ws_or_punct(shadow c: byte)
+                c >= 'a' && c <= 'z' ||
+                c >= 'A' && c <= 'Z' ||
+                c >= '0' && c <= '9';
+
+            if (prev.definitely_not_ws_or_punct) side &= ~MaybeOpens;
+            if (next.definitely_not_ws_or_punct) side &= ~MaybeCloses;
+        }
+
+        if (!side)
+            continue;
+
+        //
+        let idx         = delims.len;
+
+        let kind: K     = c == '*'  ? "Em1"
+                        : c == '`'  ? "CodeSpan"
+                        : bang      ? "Image"
+                                    : "Link";
+
+        let start       = i - (bang && 1);
+        let end         = i + 1;
+
+        delims ~= Delimiter(
+            kind:           kind,
+            bullet:         c,
+            start:          start,
+            end:            end);
+
+        // Try closing something.
+        if (side & MaybeCloses)
+        {
+            for (shadow mut i = open_spans.len; i --> 0; )
+            {
+                let other_idx       = open_spans[i];
+                ref other           = delims[other_idx];
+
+                if (other.bullet == opener)
+                {
+                    let other_start     = other.start;
+                    let other_end       = other.end;
+
+                    assert(!other.role);
+
+                    other.role          = "Opens";
+
+                    ref self            = delims[idx];
+                    self.role           = "Closes";
+                    self.handle         = other_idx.indexIntoDelimiterBackref;
+
+                    open_spans.shrink(i);
+
+                    // Links are represented by two consecutive bracket pairs,
+                    //  we keep track of which links have already been consumed
+                    //   by stripping the bullets from the trailing pair.
+                    //
+                    if (kind == "Link" && other_idx > 0)
+                    {
+                        ref back        = delims[other_idx - 1];
+
+                        if (back.role   == "Closes" &&
+                            back.bullet == ']'      &&
+                            back.end    == other_start)
+                        {
+                            // It's a match, grab the link and
+                            //  put it up on the Document.
+                            //
+                            shadow let kind = back.kind;
+                            assert(kind == "Link" || kind == "Image");
+
+                            ref refs        = kind == "Image"   ? doc.images
+                                                                : doc.links;
+
+                            inline fn parseReference(link: string)
+                            {
+                                mut split_start = link.len;
+                                mut split_end   = link.len;
+                                mut title_end   = link.len;
+
+                                if (link.ends(with: '"')
+                                    && (split  := link.find(" \"")) > 0)
+                                {
+                                    split_start = split;
+                                    split_end   = split + 2;
+                                    title_end   = link.len - 1;
+                                }
+
+                                return Reference(
+                                    href:   link[.. split_start],
+                                    title:  link[split_end .. title_end]);
+                            }
+
+                            let handle      = refs.len.indexIntoTaggedHandle;
+                            let link        = plaintext[other_end .. start];
+                            refs           ~= parseReference(link);
+
+                            // We'll use the .end mark on the preceding closing bracket
+                            //  to mask off the link from the plaintext stream.
+                            let back_opener = back.handle;
+
+                            back.end        = end;
+                            back.handle     = handle;
+
+                            // Below we use the `handle` to skip over orphaned link/image bracket pairs,
+                            //  which means we need it on the opening bracket of the first pair.
+                            ref two_back    = delims[back_opener.delimiterBackrefIntoIndex];
+                            two_back.handle = handle;
+
+                            // Finally, we need to cripple the closing bracket delimiters,
+                            //  we'll unmatch them and empty their start/end range.
+                            delims[other_idx].role = "Unmatched";
+
+                            // TODO instead of this, just don't push it.
+                            shadow ref self = delims[idx];
+                            self.role       = "Unmatched";
+                        }
+                    }
+
+                    //
+                    continue :OUTER;
+                }
+            }
+        }
+
+        // Else, we'll try opening something.
+        if (side & MaybeOpens)
+        {
+            open_spans ~= idx;
+            continue :OUTER;
+        }
+
+        // Undo, no point in keeping it around.
+        // TODO flip this around, don't push it unless needed.
+        delims.pop();
+    }
+
+    // Ok, what's left is to join everything up.
+
+    mut last_delim_end  = 0;
+    mut open_nodes      = [ Node() ];
+
+    inline fn appendPhrase(ref out: Node, phrase: string)
+    {
+        if (phrase)
+        {
+            assert(phrase.some(|c| c > ' '));
+
+            let handle      = doc.plaintext.len.indexIntoHandle;
+            doc.plaintext  ~= phrase;
+            out.items      ~= Node(kind: "Plaintext", :handle);
+        }
+    }
+
+    for (mut i = 0; i < delims.len; i++)
+    {
+        ref delim       = delims[i];
+        if (!delim.role)
+            continue;
+
+        mut handle: ArrayHandle;
+        if (delim.kind == "Link" || delim.kind == "Image")
+        {
+            if (!delim.handle.isTaggedHandle)
+                continue;
+
+            handle = delim.handle.taggedHandleIntoIndex.indexIntoHandle;
+        }
+
+        //
+        ref out = open_nodes.last;
+
+        //
+        assert(out.kind != "Plaintext");
+        assert(out.kind != "CodeSpan");
+
+        out.appendPhrase(plaintext[last_delim_end .. delim.start]);
+        last_delim_end = delim.end;
+
+        //
+        if (delim.role == "Closes")
+        {
+            mut closed: Node;
+            swap(out, closed);
+
+            if ((emLevel            := closed.emphasisLevel) &&
+                (onlyChild_emLevel  := closed.items.if_only.emphasisLevel))
+            {
+                closed          = closed.items.only;
+                closed.kind     = emLevelIntoKind(emLevel + onlyChild_emLevel);
+            }
+
+            open_nodes.pop();
+            open_nodes.last.items ~= closed;
+        }
+        else if (delim.kind == "CodeSpan")
+        {
+            // Just skip to the closing token,
+            //  ignoring whatever spans we managed to closed inside.
+
+            let start_idx       = i;
+            let delim_end       = delim.end;
+
+            while (++i < delims.len)
+            {
+                let other = delims[i];
+                if (other.handle.delimiterBackrefIntoIndex == start_idx)
+                {
+                    shadow let handle   = doc.code_snippets.len.indexIntoHandle;
+                    doc.code_snippets  ~= CodeSnippet(
+                        flags:  "CodeSpan",
+                        code:   plaintext[delim_end .. other.start])
+
+                    out.items          ~= Node(kind: "CodeSpan", :handle);
+
+                    last_delim_end      = other.end;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            open_nodes ~= Node(:delim.kind, :handle);
+        }
+    }
+
+    //
+    ref out = open_nodes.only;
+    out.appendPhrase(plaintext[last_delim_end ..]);
+    return out.items;
+}
+
+
+//
+
+fn flattenPlaintext(doc: Document, items: Node[])
+{
+    mut flat: string;
+    fn visit(shadow items: Node[])
+    {
+        for (mut i = 0; i < items.len; i++)
+        {
+            let node = items[i];
+            if (node.kind == "Plaintext")
+                flat ~= doc.plaintext[node.handle.handleIntoIndex];
+            else if (node.kind == "CodeSpan")
+                flat ~= doc.code_snippets[node.handle.handleIntoIndex].code.codeAsPlaintext();
+            else
+                visit(node.items);
+        }
+    }
+
+    visit(items);
+    return flat;
+}
+
+fn codeAsPlaintext(original: string)
+{
+    return "“" ~ original ~ "”";
+
+    mut capitlized      = "";
+
+    mut whitespace      = true;
+    mut lower_before    = false;
+
+    for (mut i = 0; i < original.len; i++)
+    {
+        let prev_whitespace = whitespace;
+        whitespace          = false;
+
+        mut c = original[i];
+        if (c >= 'a' && c <= 'z')
+        {
+            if (prev_whitespace)
+                c = (c.int + ('A'.int - 'a'.int)).byte;
+            else
+                lower_before = true;
+        }
+        else
+        {
+            if (c >= 'A' && c <= 'Z')
+            {
+                if (lower_before)
+                    capitlized ~= ' ';
+            }
+            else if (c <= ' ')
+            {
+                whitespace = true;
+            }
+            else
+            {
+                // Not whitespace nor alphabetic -
+                //  passthrough the original as-is,
+                //   can't assume we'll be capitalizing it correctly.
+                return original;
+            }
+
+            lower_before = false;
+        }
+
+        capitlized ~= c;
+    }
+
+    return capitlized;
+}
+
+
+//
+
+fn titleIntoFragmentHref(title: string)
+{
+    mut id = "#";
+    idAppend(title, out: id);
+    return id;
+}
+
+fn idAppend(ref out!: string, str: string)
+{
+    let len0 = out.len;
+
+    mut needs_hyphen = false;
+    for (mut i = 0; i < str.len; i++)
+    {
+        mut c = str[i];
+
+        // To lowercase.
+        if (c >= 'A' && c <= 'Z')
+            c = byte(c.int + ('a'.int - 'A'.int));
+
+        let ok = c >= 'a' && c <= 'z'
+             || (c >= '0' && c <= '9' && out.len > len0);
+
+        if (ok)
+        {
+            if (needs_hyphen)
+            {
+                needs_hyphen = false;
+                out ~= '-';
+            }
+
+            out ~= c;
+        }
+        else if (out.len > len0)
+        {
+            needs_hyphen = true;
+        }
+    }
+}
+
+
+//
+
+fn parse(plaintext: byte[..])
+{
+    return plaintext.PhaseOne_parseBlockStructure()
+                    .PhaseTwo_parseInlineStructure();
+}

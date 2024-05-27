@@ -1,0 +1,130 @@
+import style;
+
+import fu::src::module;
+
+// TODO FIX this moronic conversion -
+//  the problem is the compiler keeps around LineColChars markers per token,
+//   which are actually really unhandy for navigating the source files.
+//
+// What we need to do instead is to have the compiler keep around
+//  byte_start, byte_end instead, and only generate the line/col stuff
+//   when needed to report an error, by scanning the original source file on demand.
+//
+// Sounds expensive, but:
+//  A] doesn't matter (error path);
+//  B] you gotta see how we're generating code snippets right now because of
+//      the line/col thing, expensive doesn't begin to describe it
+//
+fn by_byte(src: string, tokens: Token[], by_token: Style[], fail)
+{
+    assert(tokens.len == by_token.len);
+
+    mut by_byte:    Style[];
+    by_byte.resize(src.len);
+
+    // Paint comments, part 1.
+    // TODO FIX we need a grow(fill: X) method for non-zero-filling grows.
+    for (mut i = 0; i < by_byte.len; i++)
+        by_byte[i] = Color.Comment.u8.Style;
+
+    //
+    mut line        = 1;
+    mut col         = 1;
+    mut index       = 0;
+
+    :TOKEN_LOOP
+    for (mut i = 0; i < tokens.len; i++)
+    {
+        let t       = tokens[i];
+        let style   = by_token[i];
+
+        while (line < t.line)
+        {
+            for (;;)
+            {
+                if (index >= src.len)
+                {
+                    if (t.kind == "eof")
+                        break :TOKEN_LOOP;
+
+                    return fail("EOF [L]: line(" ~ line ~ ") t.line(" ~ t.line ~ ") index(" ~ index ~ ") src.len(" ~ src.len ~ ")");
+                }
+
+                if (src[index++] == '\n')
+                {
+                    line++;
+                    col = 1;
+                    break;
+                }
+
+                col++;
+            }
+        }
+
+        while (col < t.col)
+        {
+            if (index >= src.len)
+                return fail("EOF [C]: col(" ~ col ~ ") t.col(" ~ t.col ~ ") index(" ~ index ~ ") src.len(" ~ src.len ~ ")");
+
+            if (src[index++] == '\n')
+                return fail("NL: col(" ~ col ~ ") t.col(" ~ t.col ~ ") index(" ~ (index - 1) ~ ") src.len(" ~ src.len ~ ")");
+
+            col++;
+        }
+
+        for (mut chars = t.chars; chars --> 0; )
+        {
+            if (index >= src.len)
+                return fail("by_token -> by_byte: ran out of src bytes, unpainted chars(" ~ (chars + 1) ~ ")");
+
+            by_byte[index] = style;
+
+            if (src[index++] == '\n')
+            {
+                line++;
+                col = 0;
+            }
+
+            col++;
+        }
+    }
+
+    // Unpaint comments, part 2:
+    {
+        mut comment_start = -1;
+        for (mut i = 0; i < by_byte.len; i++)
+        {
+            let s = by_byte[i].u8.Color;
+            let c = src[i];
+
+            if (s == "Comment")
+            {
+                if (comment_start < 0)
+                {
+                    // Trim leading whitespace from comment runs.
+                    if (c <= ' ')
+                    {
+                        by_byte[i] = [];
+                        continue;
+                    }
+
+                    comment_start = i;
+                }
+
+                // Commit comments as soon as we find a non-whitespace character.
+                if (c > ' ')
+                    comment_start = i + 1;
+            }
+            else if (comment_start >= 0)
+            {
+                // Clear trailing whitespace from comments.
+                while (comment_start < i)
+                    by_byte[comment_start++] = [];
+
+                comment_start = -1;
+            }
+        }
+    }
+
+    return by_byte;
+}

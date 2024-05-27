@@ -1,0 +1,363 @@
+import fu::src::context;
+import fu::src::module;
+import fu::src::helpers;
+import fu::src::hacks;
+import fu::src::lifetime;
+
+import highlight::style;
+
+let HAT  = 0;
+let HEAD = 1;
+let BODY = 2;
+let FOOT = 3;
+let SHOE = 4;
+
+pub nothrow fn preprocess(ref doc: markdown::Document)
+{
+    struct SnippetPart { code: string; num_lines: int; hide: bool; show: bool };
+
+
+    //
+
+    struct PartsAndHighlight {
+        parts:          SnippetPart[];
+        highlight?:     Style[];
+    };
+
+    mut prepass: PartsAndHighlight[];
+
+
+    // Prepase code blocks: Hat, head, foot, shoe.
+
+    {
+        type State = SnippetPart[];
+        mut state: State;
+
+        fn hasAnnot(snip: markdown::CodeSnippet, annot: string)
+            snip.annots.find_wholeIdentifier(annot) >= 0;
+
+        prepass = doc.code_snippets.map(|ref snip|
+        {
+            if (snip.flags & "CodeSpan")
+                continue [];
+
+            // `standalone` snippet annotation -
+            //  meant for introducing a single snippet that doesn't interrupt
+            //   code sharing among the remaining snippets.
+            //
+            mut standalone_undo: State;
+
+            let isStandalone = snip.hasAnnot("standalone");
+            if       (isStandalone) swap(state, standalone_undo);
+            defer if (isStandalone) swap(state, standalone_undo);
+
+            // Either way, state needs to fit 5 items.
+            state.grow(SHOE + 1);
+
+            // Don't show headers or footers more than once.
+            state.each: |ref part, i|
+                if (i != BODY && !part.show && part.code)
+                    part.hide = true;
+
+            fn fail(reason: string)
+            {
+                snip.code = "ERROR(prepass): " ~ reason;
+                continue [];
+            }
+
+            fn cmd_split(code: string)
+            {
+                mut result: string[];
+
+                mut start = 0;
+                for (;;)
+                {
+                    let next = code.find("//: ", :start);
+                    result  ~= code[start .. next < 0 ? code.len : next];
+                    if (next < 0)
+                        break;
+
+                    start    = next + 4;
+                    let nl   = code.find('\n', :start);
+                    result  ~= code[start .. nl < 0 ? code.len : nl];
+                    if (nl < 0)
+                        break;
+
+                    start    = nl + 1;
+                }
+
+                return result;
+            }
+
+            mut split = snip.code.cmd_split();
+            while (split.len)
+            {
+                mut hide    = false;
+                mut show    = false;
+                mut which   = BODY;
+
+                if (split.len > 1)
+                {
+                    which       = -1;
+
+                    let cmd     = split[1];
+                    cmd.split(' '): |part|
+                    {
+                        if (!part)
+                            continue;
+
+                        if      (part == "hide")    hide = true;
+                        else if (part == "show")    show = true;
+
+                        else if (part == "hat")     which = HAT;
+                        else if (part == "head")    which = HEAD;
+
+                        else if (part == "foot")    which = FOOT;
+                        else if (part == "shoe")    which = SHOE;
+
+                        else                        fail("Unknown //: keyword: '" ~ part ~ "'");
+                    }
+
+                    if (which < HAT || which > SHOE)
+                        fail("Incomplete //: command: '" ~ cmd ~ '"');
+                }
+
+                ref item        = state[which];
+
+                item.hide       = hide;
+                item.show       = show;
+
+                let part        = split[which > BODY ? 2 : 0];
+                if (part)
+                {
+                    ref code    = item.code;
+                    code        = part;
+
+                    if (!code.ends(with: '\n'))
+                        code   ~= '\n';
+
+                    item.num_lines = 0;
+                    for (shadow mut i = 0; i < code.len; i++)
+                        if (code[i] == '\n')
+                            item.num_lines++;
+                }
+
+                if (which == BODY)
+                    break;
+
+                split.splice(which > BODY ? 1 : 0, 2);
+            }
+
+            continue PartsAndHighlight(parts: state);
+        });
+    }
+
+
+    // Compile & highlight all code blocks.
+
+    doc.code_snippets.par::zip(prepass): |ref snip, shadow ref prepass|
+    {
+        if (snip.flags & "CodeSpan")
+            continue;
+
+        //
+        fn fail(reason: string)
+        {
+            snip.code = "ERROR(highlight): " ~ reason;
+            continue;
+        }
+
+        ref highlight = prepass.highlight;
+
+        let expect_exit = snip.annots.has("exit 1") && 1;
+
+        if (snip.annots != "sh" &&
+            snip.annots != "output")
+        {
+            mut joint = "";
+            prepass.parts.each: |part|
+                joint ~= part.code;
+
+            implicit mut testdiffs: fu::src::testdiff::TestDiffs;
+
+            try {
+                let ctx     = fu::src::test_utils::ZERO([ joint ],
+                    options:  fu::src::options::Options(dev: "DEV_IgnoreDefects"),
+                    :expect_exit);
+
+                highlight   = highlight::getSyntaxHighlighting(:ctx, :fn fail);
+            }
+            catch (e) {
+                fail(e.fu::src::test_utils::ERR_STRIP_ANSI);
+            }
+
+            swap(snip.code, joint);
+        }
+    };
+
+
+    // Format inline code snippets -
+    //
+    // Generally can't compile them,
+    //  so we'll try to find a matching phrase in some block to paint with,
+    //   else we'll fallback to basic heuristics.
+
+    for (mut i_span = 0; i_span < doc.code_snippets.len; i_span++)
+    {
+        ref span            = doc.code_snippets[i_span];
+        if !(span.flags & "CodeSpan")
+            continue;
+
+        mut highlight       = highlight::getExact(span.code);
+
+        if (!highlight) :MATCH
+        {
+            for (mut i = 1; i < doc.code_snippets.len; i++)
+            {
+                // Start from preceding blocks, nearest first,
+                //  then fallback to blocks that follow, again nearest first.
+                mut i_block         = i_span - i;
+                if (i_block < 0)
+                    i_block         = i_span - i_block;
+
+                let block           = doc.code_snippets[i_block];
+                if (block.flags & "CodeSpan")
+                    continue;
+
+                let block_highlight = prepass[i_block].highlight;
+                if (block.code.len != block_highlight.len)
+                    continue;
+
+                mut start           = 0;
+                for (;;)
+                {
+                    let match       = block.code.find_wholeIdentifier(span.code, :start);
+                    if (match < 0)
+                        break;
+
+                    start           = match + span.code.len;
+
+                    // Only use the snippet if actually colored,
+                    //  e.g. struct member declarations are not currently colored.
+                    shadow let hi   = block_highlight[match .. match + span.code.len];
+                    hi.each: |c| if (c)
+                    {
+                        highlight   = hi;
+                        break :MATCH;
+                    }
+                }
+            }
+
+            // Fallback.
+            highlight           = highlight::getBestGuess(span.code);
+        }
+
+        swap(prepass[i_span].highlight, highlight);
+    }
+
+
+    // Finally, prep the formatted html.
+
+    doc.code_snippets.par::zip(prepass): |ref snip, shadow prepass|
+    {
+        if (!prepass.highlight)
+            continue;
+
+        fn fail(reason: string)
+        {
+            snip.code = "ERROR(render): " ~ reason;
+            continue;
+        }
+
+        mut frag: html::Fragment;
+        {
+            mut jointStart      = 0;
+            mut headHideEnd     = 0;
+            mut tailHideStart   = 0;
+
+            if (!prepass.parts)
+            {
+                frag.applySyntaxHighlighting(
+                    snip.code, prepass.highlight, :fn fail);
+            }
+            else prepass.parts.each: |part, i|
+            {
+                if (part.hide && i > BODY && !tailHideStart)
+                    tailHideStart   = frag.raw.len;
+
+                let jointEnd    = jointStart + part.code.len;
+
+                frag.applySyntaxHighlighting(
+                    part.code, prepass.highlight[jointStart .. jointEnd], :fn fail);
+
+                if (part.hide && i < BODY)
+                    headHideEnd     = frag.raw.len;
+
+                jointStart      = jointEnd;
+            }
+
+            if (tailHideStart)
+            {
+                frag.raw.splice(tailHideStart, 0,
+                    "<span class='snip-hide snip-hide-bottom'>" ~
+                    "<span>");
+
+                frag.raw ~=
+                    "</span></span>";
+            }
+
+            if (headHideEnd)
+            {
+                frag.raw.splice(headHideEnd, 0,
+                    "</span></span>");
+
+                frag.raw.splice(0, 0,
+                    "<span class='snip-hide snip-hide-top'>" ~
+                    "<span>");
+            }
+        }
+
+        //
+        assert(!(snip.flags & "DoNotEscape"))
+        snip.flags         |= "DoNotEscape";
+
+        swap(snip.code, frag.raw);
+    }
+}
+
+fn find_wholeIdentifier(haystack: byte[], needle: byte[], mut start = 0)
+{
+    if (needle) for (;;)
+    {
+        let match       = haystack.find(needle, :start);
+        if (match < 0)
+            break;
+
+        start           = match + needle.len;
+
+        // Don't match across identifier boundaries,
+        //  and halfway through a field-chain.
+        //
+        fn identifier(c: byte)
+            c >= 'a' && c <= 'z' ||
+            c >= 'A' && c <= 'Z' ||
+            c >= '0' && c <= '9' ||
+            c == '_';
+
+        {
+            let c_prev = haystack.if(exists: match - 1);
+            if (c_prev.identifier || c_prev == '.')
+                continue;
+        }
+
+        {
+            let c_next = haystack.if(exists: match + needle.len);
+            if (c_next.identifier)
+                continue;
+        }
+
+        return match;
+    }
+
+    return -1;
+}

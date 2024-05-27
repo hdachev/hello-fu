@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/static/main.css">
+<link rel="icon" href="/static/favicon.svg">
+<title>Value vs Reference Semantics&nbsp;— The Fu Programming Language</title>
+</head>
+<body>
+<script src="/static/main.js" async></script>
+<noscript><style> .needs-js { display: none; } </style></noscript>
+
+<input type="checkbox" id="hb-chkbx" class="hb-chkbx"/>
+
+<div class="cols">
+
+    <label class="hb-rest" for="hb-chkbx"></label>
+
+    <nav class="col-nav">
+        <div class="col-scroll">
+            <div class="col-header col-header-side"></div>
+            <div class="col-body"><a href="/motivation" class="nav-item nav-1">Motivation</a>
+<div class='nav-group'><div><input type='checkbox' class='nav-chkbx' id="tour-syntax-and-semantics" checked />
+<div class="nav-tree here nav-2">
+<label class="nav-label here nav-2" for="tour-syntax-and-semantics">Syntax &amp; Semantics<svg viewBox="0 0 16 16" class="i-line nav-chevron">
+<path d="M 5 2 L 11 8 L 5 14" />
+</svg></label>
+<div class='nav-children'><a href="/tour/syntax-and-semantics/ufcs" class="nav-item nav-3">Universal Function Call Syntax</a>
+<a href="/tour/syntax-and-semantics/overloading" class="nav-item nav-3">Overloading Without Ambiguity</a>
+<a href="/tour/syntax-and-semantics/semantics" class="nav-item nav-3 here">Value vs Reference Semantics</a>
+</div></div>
+<input type='checkbox' class='nav-chkbx' id="tour-control-flow" />
+<div class="nav-tree nav-2">
+<label class="nav-label nav-2" for="tour-control-flow">Control Flow<svg viewBox="0 0 16 16" class="i-line nav-chevron">
+<path d="M 5 2 L 11 8 L 5 14" />
+</svg></label>
+<div class='nav-children'><a href="/tour/control-flow/short-circuit" class="nav-item nav-3">Short-Circuit Operators</a>
+<a href="/tour/control-flow/labels" class="nav-item nav-3">Local &amp; Foreign Labels</a>
+<a href="/tour/control-flow/iteration" class="nav-item nav-3">Iteration</a>
+</div></div>
+<input type='checkbox' class='nav-chkbx' id="tour-types-and-reflection" />
+<div class="nav-tree nav-2">
+<label class="nav-label nav-2" for="tour-types-and-reflection">Types &amp; Reflection<svg viewBox="0 0 16 16" class="i-line nav-chevron">
+<path d="M 5 2 L 11 8 L 5 14" />
+</svg></label>
+<div class='nav-children'><a href="/tour/types-and-reflection/structures" class="nav-item nav-3">Structures &amp; Reflection</a>
+<a href="/tour/types-and-reflection/user-defined-primitive-types" class="nav-item nav-3">Enums, Flags &amp; Primitives</a>
+<a href="/tour/types-and-reflection/built-in-types" class="nav-item nav-3">Built-in Types</a>
+<a href="/tour/types-and-reflection/template-types" class="nav-item nav-3">Template Types</a>
+</div></div>
+<input type='checkbox' class='nav-chkbx' id="tour-scope" />
+<div class="nav-tree nav-2">
+<label class="nav-label nav-2" for="tour-scope">Scope<svg viewBox="0 0 16 16" class="i-line nav-chevron">
+<path d="M 5 2 L 11 8 L 5 14" />
+</svg></label>
+<div class='nav-children'><a href="/tour/scope/lexical-scope" class="nav-item nav-3">Lexical Scope &amp; Shadowing</a>
+<a href="/tour/scope/implicit" class="nav-item nav-3">“implicit” Argument Passing</a>
+<a href="/tour/scope/using" class="nav-item nav-3">The “using” Keyword</a>
+</div></div>
+</div></div>
+<a href="/target-audience" class="nav-item nav-1">Who Is This For?</a>
+<a href="/bootstrap" class="nav-item nav-1">Getting Started</a>
+<a href="https://github.com/hdachev/fu" target="_blank" class="nav-item">
+                GitHub
+                <svg viewBox="0 0 16 16" class="i-line">
+                <path d="M 7 2 L 13 8 L 7 14 M 13 8 L 1 8" />
+                </svg>
+            </a>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="col-toc">
+        <div class="col-scroll">
+            <div class="col-header col-header-side"></div>
+            <div class="col-body"><a href="#value-vs-reference-semantics" class="toc-item toc-2">Value vs Reference Semantics</a>
+<a href="#binding-declarations" class="toc-item toc-3">Binding Declarations</a>
+<a href="#let-shorthands" class="toc-item toc-3">“let” Shorthands</a>
+<a href="#about-const-ref" class="toc-item toc-3">About “const ref”</a>
+</div>
+        </div>
+    </nav>
+
+    <main class="col-main">
+        <div class="col-header">
+<h2 id="value-vs-reference-semantics">
+	Value vs Reference Semantics
+</h2>
+</div>
+        <div class="col-body">
+<p>
+	Often when a naively written C++ program is slow it is because of indiscriminate copying of non-trivial values. C++ makes it easy to deep-copy by mistake because it defaults to value semantics, and then implements value semantics by always copying.
+</p>
+<p>
+	Value semantics are a good default, and are responsible for much of the comfort of purely functional programming. What we don't want is the quality of life / efficiency tradeoff.
+</p>
+<p class='incomplete-sentence'>
+	The basic idea is simple - these two variables need not point to different values:
+</p>
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C2'>test</s>() {
+</span></span>    <s class='c1'>let</s> <s class='c7'>a</s> = [ <s class='c5'>1</s>, <s class='c5'>2</s>, <s class='c5'>3</s>, <s class='c5'>4</s>, <s class='c5'>5</s>, <s class='c5'>6</s>, <s class='c5'>7</s> ];
+    <s class='c1'>let</s> <s class='c7'>b</s> = <s class='c7'>a</s>;
+<span class='snip-hide snip-hide-bottom'><span>
+    <s class='c2'>return</s> <s class='c7'>b</s>;
+}
+
+<s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C2'>test</s>.len - <s class='c5'>7</s>;
+</span></span></code></pre>
+
+<p>
+	
+</p>
+<p>
+	Note that <code><s class='c7'>a</s></code> and <code><s class='C1'>b</s></code> are constants and can safely share the same value in memory without any observable side effects.
+</p>
+<h3 id="binding-declarations"><a href="#binding-declarations" class="h-anchor">
+	Binding Declarations
+</a></h3>
+<p class='incomplete-sentence'>
+	Bindings either have value semantics or reference semantics, and either can be mutable or immutable:
+</p>
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C3'>test</s>(<s class='c1'>ref</s> <s class='C0'>place</s>, <s class='c1'>const</s> <s class='c6'>value</s>) {
+</span></span>    <s class='c1'>let</s> <s class='c1'>const</s> <s class='c1'>val</s> <s class='c7'>a</s> = <s class='C0'>place</s> || <s class='c6'>value</s>;
+    <s class='c1'>let</s>   <s class='c1'>mut</s> <s class='c1'>val</s> <s class='C1'>b</s> = <s class='C0'>place</s> || <s class='c6'>value</s>;
+
+    <s class='c1'>let</s> <s class='c1'>const</s> <s class='c1'>ref</s> <s class='c7'>c</s> = <s class='C0'>place</s>;
+    <s class='c1'>let</s>   <s class='c1'>mut</s> <s class='c1'>ref</s> <s class='C1'>d</s> = <s class='C0'>place</s>;
+<span class='snip-hide snip-hide-bottom'><span>
+    <s class='C0'>d</s> += <s class='C1'>b</s> += <s class='c7'>c</s> + <s class='c7'>a</s>;
+}
+
+<s class='c1'>fn</s> <s class='C2'>main</s>() {
+    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>0</s>;
+    <s class='C3'>test</s>(<s class='C1'>v</s>, <s class='C1'>v</s>);
+    <s class='c2'>return</s> <s class='C1'>v</s>;
+}
+</span></span></code></pre>
+
+<p>
+	
+</p>
+<p>
+	<code class="first-node"><s class='c1'>const</s></code> vs <code><s class='c1'>mut</s></code> determine whether the binding is mutable or immutable, namely whether you can change its value by writing to it.
+</p>
+<p>
+	<code class="first-node"><s class='c1'>val</s></code> vs <code><s class='c1'>ref</s></code> determine whether the binding has value or reference semantics.
+</p>
+<ul>
+	<li>
+		<p>
+			<strong>Value semantics</strong> imply that writing to a <code><s class='c1'>val</s></code> will not affect any place pointed to by its initializer, and vice versa.
+		</p>
+	</li>
+	<li>
+		<p>
+			<strong>Reference semantics</strong> imply the opposite - mutating a <code><s class='c1'>ref</s></code> will mutate the place pointed to by its initializer, and vice versa.
+		</p>
+	</li>
+</ul>
+<h3 id="let-shorthands"><a href="#let-shorthands" class="h-anchor">
+	<code class="first-node"><s class='c1'>let</s></code> Shorthands
+</a></h3>
+<p>
+	<code class="first-node"><s class='c1'>let</s></code> is optional when another keyword is present. When not otherwise specified, we generally default to <code><s class='c1'>val</s></code>, vals default to <code><s class='c1'>const</s></code>, and refs bind mutably if possible, to assist with generic programming.
+</p>
+<p class='incomplete-sentence'>
+	Thus, the most common forms you'll use on any day are:
+</p>
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C3'>test</s>(<s class='c1'>ref</s> <s class='C0'>place</s>, <s class='c1'>const</s> <s class='c6'>value</s>) {
+</span></span>    <s class='c3'>// Shorthand:               // Equivalent to:</s>
+
+    <s class='c1'>let</s> <s class='c7'>a</s> = <s class='C0'>place</s> || <s class='c6'>value</s>;     <s class='c3'>/*  val a           = ...
+                                    const a         = ...
+                                    let val a       = ...
+                                    let const a     = ...
+                                    let const val a = ...   */</s>
+
+    <s class='c1'>mut</s> <s class='C1'>b</s> = <s class='C0'>place</s> || <s class='c6'>value</s>;     <s class='c3'>/*  mut val a       = ...
+                                    let mut a       = ...
+                                    let mut val a   = ...   */</s>
+
+    <s class='c1'>ref</s> <s class='C1'>c</s> = <s class='C0'>place</s>;              <s class='c3'>/*  let ref c       = ...   */</s>
+<span class='snip-hide snip-hide-bottom'><span>
+    <s class='C0'>c</s> += <s class='C1'>b</s> += <s class='c7'>a</s>;
+}
+
+<s class='c1'>fn</s> <s class='C2'>main</s>() {
+    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>0</s>;
+    <s class='C3'>test</s>(<s class='C1'>v</s>, <s class='C1'>v</s>);
+    <s class='c2'>return</s> <s class='C1'>v</s>;
+}
+</span></span></code></pre>
+
+<p>
+	
+</p>
+<p class='incomplete-sentence'>
+	In function argument position the <code><s class='c1'>let</s></code> is always omitted, so these look like:
+</p>
+<pre><code><s class='c1'>fn</s> <s class='C3'>test</s>(<s class='c7'>a</s>: <s class='C4'>int</s>, <s class='c1'>mut</s> <s class='C1'>b</s>: <s class='C4'>int</s>, <s class='c1'>ref</s> <s class='C1'>c</s>: <s class='C4'>int</s>) {
+    <s class='C1'>c</s> += <s class='C1'>b</s> += <s class='c7'>a</s>;
+}
+<span class='snip-hide snip-hide-bottom'><span>
+<s class='c1'>fn</s> <s class='C2'>main</s>() {
+    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>0</s>;
+    <s class='C3'>test</s>(<s class='C1'>v</s>, <s class='C1'>v</s>, <s class='C1'>v</s>);
+    <s class='c2'>return</s> <s class='C1'>v</s>;
+}
+</span></span></code></pre>
+
+<p>
+	
+</p>
+<p class='incomplete-sentence'>
+	Currently we also run with a Go &amp; Python-like walrus <em>let expression</em>:
+</p>
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C3'>test</s>(<s class='c1'>ref</s> <s class='C1'>b</s>: <s class='C4'>int</s>) {
+</span></span>    a <s class='c7'>:=</s> <s class='C1'>b</s>;
+<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> (<s class='C1'>b</s> += <s class='c7'>a</s>) += <s class='c7'>a</s>;
+}
+
+<s class='c1'>fn</s> <s class='C2'>main</s>() {
+    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>1</s>;
+    <s class='c2'>return</s> <s class='C3'>test</s>(<s class='C1'>v</s>) - <s class='c5'>3</s>;
+}
+</span></span></code></pre>
+
+<p class='incomplete-sentence'>
+	... which is equivalent to:
+</p>
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C3'>test</s>(<s class='c1'>ref</s> <s class='C1'>b</s>: <s class='C4'>int</s>) {
+</span></span>    <s class='c1'>let</s> <s class='c7'>a</s> = <s class='C1'>b</s>;
+<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> (<s class='C1'>b</s> += <s class='c7'>a</s>) += <s class='c7'>a</s>;
+}
+
+<s class='c1'>fn</s> <s class='C2'>main</s>() {
+    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>1</s>;
+    <s class='c2'>return</s> <s class='C3'>test</s>(<s class='C1'>v</s>) - <s class='c5'>3</s>;
+}
+</span></span></code></pre>
+
+<p>
+	... but does not need to appear in statement position.
+</p>
+<h3 id="about-const-ref"><a href="#about-const-ref" class="h-anchor">
+	About <code><s class='c1'>const</s> <s class='c1'>ref</s></code>
+</a></h3>
+<p>
+	A <code><s class='c1'>const</s> <s class='c1'>ref</s></code>, seldom used, is immutable in the way that you cannot make writes to it, but still reflects mutations that occur on the place it is bound to.
+</p>
+<p>
+	In C++, one commonly defaults to <code>const &amp;</code> as a cheap way to bind to some place without copying. This is not necessary here - just use <code><s class='c1'>let</s></code>.
+</p>
+<p>
+	The borrow checker tracks what gets mutated and when, and will promote a <code><s class='c1'>let</s></code> to a <code><s class='c1'>const</s> <s class='c1'>ref</s></code> when the bound place remains constant until the final use of the <code><s class='c1'>let</s></code>. This is done after inlining, code motion and relaxation, and a copy is only incurred when all else fails. Finally, although not free, copies of non-trivial values generally benefit from copy-on-write and only increment a reference counter.
+</p>
+<p>
+	Data will really be copied only if it is actively mutated while used as a previously bound constant, at which point, in equivalent C++, one would have either made the copy explicitly, or would have a bug.
+</p>
+<p>
+	Thus, only use <code><s class='c1'>const</s> <s class='c1'>ref</s></code> if you really want to observe external mutation to an otherwise immutable binding, and otherwise default to <code><s class='c1'>let</s></code>. A copy will only be incurred if necessary, and will heal automatically once your code evolves to no longer need it.
+</p>
+</div>
+        <div class="col-foot">
+            <div class="ftlnk-pair"><a class="ftlnk next" href="/tour/control-flow/short-circuit">
+    <div class="lnk-lbl">Next</div>
+    <div class="lnk-ttl">Short-Circuit Operators</div>
+</a><a class="ftlnk prev" href="/tour/syntax-and-semantics/overloading">
+    <div class="lnk-lbl">Previous</div>
+    <div class="lnk-ttl">Overloading Without Ambiguity</div>
+</a></div>
+        </div>
+
+    </main>
+
+</div>
+
+<footer class="page-foot">
+
+    <svg viewBox="0 0 1011 999" class="logo">
+    <path class="shape" d="M0 999L245 999L245 612L395 612L395 616C387 884,498 999,766 999L1011 999L1011 383L766 383L766 773C654 773,616 736,616 624L616 383L245 383C245 283,295 233,395 233L616 233L616 0L383 0C128 0,0 128,0 383L0 999Z "></path>
+    </svg>
+
+</footer>
+
+<nav class="tb">
+    <label for="hb-chkbx" class="tb-tl tb-btn tb-burg">
+        <svg viewBox="0 0 16 16" class="i-line">
+        <path d="M 2 4 L 14 4 M 2 8 L 14 8 M 2 12 L 14 12" />
+        </svg>
+    </label>
+    <a href="/" class="tb-title"><i>The</i> Fu <i>Programming Language</i></a>
+
+    <a href="https://github.com/hdachev/fu" target="_blank" title="Github:
+The Fu Programming Language" class="tb-tr tb-btn tb-github">
+        <svg viewBox="0 1 98 98" class="i-fill">
+        <path d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" />
+        </svg>
+    </a>
+
+    <a class="tb-tr tb-btn tb-theme tb-sun needs-js">
+        <svg viewBox="0 0 32 32" class="i-fill" style="font-size: 1.25em">
+            <path d="M16,12a4,4,0,1,1-4,4,4.0045,4.0045,0,0,1,4-4m0-2a6,6,0,1,0,6,6,6,6,0,0,0-6-6Z" transform="translate(0 0.0049)"/>
+            <rect x="6.8536" y="5.3745" width="1.9998" height="4.958" transform="translate(-3.253 7.8584) rotate(-45)"/>
+            <rect x="2" y="15.0049" width="5" height="2"/>
+            <rect x="5.3745" y="23.1466" width="4.958" height="1.9998" transform="translate(-14.7739 12.6305) rotate(-45)"/>
+            <rect x="15" y="25.0049" width="2" height="5"/>
+            <rect x="23.1466" y="21.6675" width="1.9998" height="4.958" transform="translate(-10.0018 24.1514) rotate(-45)"/>
+            <rect x="25" y="15.0049" width="5" height="2"/>
+            <rect x="21.6675" y="6.8536" width="4.958" height="1.9998" transform="translate(1.5191 19.3793) rotate(-45)"/>
+            <rect x="15" y="2.0049" width="2" height="5"/>
+        </svg>
+    </a>
+
+    <a class="tb-tr tb-btn tb-theme tb-moon needs-js">
+        <svg viewBox="0 0 32 32" class="i-fill" style="font-size: 1.15em">
+            <path d="M13.5025,5.4136A15.0755,15.0755,0,0,0,25.096,23.6082a11.1134,11.1134,0,0,1-7.9749,3.3893c-.1385,0-.2782.0051-.4178,0A11.0944,11.0944,0,0,1,13.5025,5.4136M14.98,3a1.0024,1.0024,0,0,0-.1746.0156A13.0959,13.0959,0,0,0,16.63,28.9973c.1641.006.3282,0,.4909,0a13.0724,13.0724,0,0,0,10.702-5.5556,1.0094,1.0094,0,0,0-.7833-1.5644A13.08,13.08,0,0,1,15.8892,4.38,1.0149,1.0149,0,0,0,14.98,3Z"/>
+        </svg>
+    </a><a class="tb-tr tb-btn prev" href="/tour/syntax-and-semantics/overloading" title="Previous:
+Overloading Without Ambiguity">
+    <svg viewBox="0 0 16 16" class="i-line">
+    <path d="M 9 2 L 3 8 L 9 14 M 3 8 L 15 8" />
+    </svg>
+</a><a class="tb-tr tb-btn next" href="/tour/control-flow/short-circuit" title="Next:
+Short-Circuit Operators">
+    <svg viewBox="0 0 16 16" class="i-line">
+    <path d="M 7 2 L 13 8 L 7 14 M 13 8 L 1 8" />
+    </svg>
+</a></nav>
+
+</body>
+</html>

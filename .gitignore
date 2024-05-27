@@ -1,0 +1,4 @@
+bin
+.foreign
+.DS_store
+*.cpp

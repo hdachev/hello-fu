@@ -1,0 +1,105 @@
+import style;
+import by_token;
+
+
+//
+
+fn traverseSolvedNodes(
+    implicit ctx: Context,
+    implicit module: Module,
+    fail)
+{
+    implicit mut _current_globid: int;
+
+    fn traverseSolved(n: SolvedNode/*, mut mask: Style*/)
+    {
+        implicit _here  = n.token;
+        mut t           = (n.kind == "call" || n.kind == "letdef" || n.kind == "fn")
+                                && n.target;
+
+        mut wasCID      = false;
+
+        if (n.kind == "letdef")
+        {
+            traverseSolved(GET(t).solved/*, mask*/);
+        }
+
+        while (t)
+        {
+            let o       = GET(t);
+            let cid     = tryParseClosureID(id: o.name);
+            if !(cid.target)
+                break;
+
+            t           = cid.target;
+            wasCID      = true;
+        }
+
+        let o           = t && GET(t);
+        shadow let t    =
+            o.kind == "field"
+                ? n.lifetime.Lifetime_if_only(|locid| locid && (t = nested(:locid)))
+                : t;
+
+        shadow let o    = t && GET(t);
+        let ext         = t && EXT(t);
+
+
+        // Descend children & try to work
+
+        for (mut i = 0; i < n.items.len; i++)
+        {
+            // TODO REENABLE when happy with everything else -
+            //  this is the "written-to" underline,
+            //   needs a great deal of refinement to work well.
+            //
+            // shadow mut mask = mask;
+            //
+            let host_arg = ext.args.if(exists: i);
+            // if (host_arg.written_to)
+            //     mask |= "WrittenTo";
+
+            if (host_arg.flags & F_INJECTED)
+                continue;
+
+            traverseSolved(n.items[i]/*, mask*/);
+        }
+
+        // TODO REENABLE currently no motivating examples -
+        //
+        // if (n.kind == "copy" && !n.type.is_trivial)
+        //     mask |= "NonTrivialCopy";
+        //
+        // applyMask(_here, mask);
+
+
+        // Coloring callsites & declarations.
+        if (o
+
+            // Currently we're using a ClosureID on inlined argdefs for error attrib,
+            //  currently inline argdefs glitch the highlighting, skip them for now.
+            && (n.kind != "letdef" || !wasCID)
+
+            // Skip templates & inlines, not fully solved, not reliable.
+            && (o.kind != "template" && o.kind != "inline")
+
+            // Skip types, should have been heurstically in painted here.
+            && (o.kind != "type")
+
+            // Skip pipe characters, lambdas dont look nice painted
+            && !(o.flags & F_LAMBDA))
+        {
+            applyTarget(n.token, t);
+        }
+    }
+
+
+    // Go!
+
+    traverseSolved(module.out.solve.root);
+
+    module.out.solve.scope.overloads.each: |o, i| {
+        _current_globid = i + 1;
+        traverseSolved(o.solved && o.solved);
+    };
+}

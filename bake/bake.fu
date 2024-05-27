@@ -1,0 +1,522 @@
+import fu::src::helpers;
+import widgets::Template;
+
+fn readdir_rec(dir: string, yield, ext!?: string or [])
+{
+    fn scan(shadow dir: string)
+    {
+        fs::readdir(dir): |name, type|
+        {
+            if (type != fs::DT_REG)
+                scan(path::join(dir, name));
+
+            if (type != fs::DT_DIR && (typeof(ext) -> [] || name.ends(with: ext)))
+                yield(path::join(dir, name));
+        };
+    }
+
+    scan(dir);
+}
+
+
+//
+
+let DIR_STATIC      = "static";
+let DIR_CONTENT     = "content";
+let DIR_BUILD       = "docs";
+
+struct PathParse
+{
+    output_dir:         string;
+    output_file:        string;
+    href:               string;
+
+    dir_prefix:         u32;
+    file_prefix:        u32;
+};
+
+fn getLexicographicOrder(a: string, b: string)
+{
+    let n = min(a.len, b.len);
+
+    mut cmp = 0;
+    for (mut i = 0; i < n && !cmp; i++)
+        cmp = a[i] <> b[i];
+
+    return cmp || a.len <> b.len;
+}
+
+
+//
+
+fn parsePath(path: string)
+{
+    using mut result:   PathParse;
+
+    mut current:        u32;
+    mut clean_start:    int;
+
+    for (mut i = 0; i < path.len; i++)
+    {
+        let c = path[i];
+        if (c >= '0' && c <= '9')
+        {
+            current        *= 10;
+            current        += u32(c.int - '0'.int);
+        }
+        else
+        {
+            if (c == '-')
+            {
+                file_prefix   <<= 16;
+                file_prefix    |= current;
+
+                current         = 0;
+
+                // Next!
+                i++;
+            }
+
+            clean_start     = i;
+
+            for (; i < path.len; i++)
+            {
+                shadow let c = path[i];
+                if (c == '/')
+                {
+                    output_dir     ~= path[clean_start .. i + 1];
+
+                    dir_prefix    <<= 16;
+                    dir_prefix     |= file_prefix;
+
+                    file_prefix     = 0;
+
+                    // Go back to parsing numeric prefixes.
+                    break;
+                }
+            }
+        }
+    }
+
+    output_file     = path[clean_start ..];
+
+    // Replace content/ with build/,
+    //  and .md with .html.
+    {
+        assert(output_dir.starts(with: DIR_CONTENT));
+        output_dir.splice(0, DIR_CONTENT.len, DIR_BUILD);
+
+        assert(output_file.ends(with: ".md"));
+        output_file.splice(output_file.len - 3, 3, ".html");
+    }
+
+    // Finally - the publicly visible link, no extension, no build/.
+    {
+        let dir_start   = output_dir.starts(with: DIR_BUILD ~ '/')
+                            ? DIR_BUILD.len + 1
+                            : 0;
+
+        href            = "/"   ~ output_dir[dir_start ..]
+                                ~ output_file;
+
+        href.shrink(
+            href.ends(with: "/index.html")
+                ? href.len - 10
+                : href.ends(with: ".html")
+                    ? href.len - 5
+                    : href.len);
+    }
+
+    //
+    return result;
+}
+
+
+//
+
+struct Document
+{
+    path:           string;
+    using pp:       PathParse;
+
+    plaintext:      string;
+    using markdown: markdown::Document;
+};
+
+fn title(doc: Document)
+    doc.toc.if_first.title
+        || "[ERROR No title: empty table of contents]";
+
+
+//
+
+fn fail(doc: Document, reason: string)
+{
+    throw("Validation failed.\n\n\tDOC " ~ doc.path ~ "\n\n\t" ~ reason);
+}
+
+fn fail(doc: Document, .href: string, reason: string)
+{
+    doc.fail("REF " ~ href ~ "\n\n\t" ~ reason);
+}
+
+fn resolveLinks(ref docs: Document[])
+{
+    for (mut i = 0; i < docs.len; i++)
+    {
+        ref doc = docs[i];
+
+        for (shadow mut i = 0; i < doc.links.len; i++)
+        {
+            ref link = doc.links[i];
+
+            let dot_md = link.href.find(".md");
+            if (dot_md > 0)
+            {
+                let frag_start = dot_md + 3;
+
+                ref needle  = link.href[.. frag_start];
+                mut matched = false;
+                for (shadow mut i = 0; i < docs.len; i++)
+                {
+                    ref other = docs[i];
+
+                    if (other.path.has(needle))
+                    {
+                        matched && doc.fail(link, "Link matches multiple documents: " ~ link.href);
+
+                        let frag = link.href[frag_start ..];
+                        if (frag) :VALIDATE_FRAG
+                        {
+                            other.toc.each: |heading|
+                                if (heading.href == frag)
+                                    break :VALIDATE_FRAG;
+
+                            doc.fail(link, "Invalid #fragment: " ~ frag);
+                        }
+
+                        needle  = other.href;
+                        matched = true;
+                    }
+                }
+
+                matched || doc.fail(link, "Failed to resolve link: " ~ link.href);
+            }
+        }
+    }
+}
+
+
+//
+
+fn sitemap_render(docs: Document[], doc_idx!: int)
+{
+    mut frag: html::Fragment;
+
+    let current_href = docs.if(exists: doc_idx).href;
+
+    mut last_href: string;
+    for (mut i = 0; i < docs.len; i++)
+    {
+        let doc = docs[i];
+
+        if (doc.href == "/")
+            continue;
+
+        frag.widgets::NavTree::update(:last_href, :doc.href, :current_href);
+
+        mut depth = 0;
+        doc.output_dir.each: |c|
+            if (c == '/')
+                depth++;
+
+        mut classes = "nav-item nav-" ~ depth;
+
+        if (i == doc_idx)
+            classes ~= " here";
+
+        frag.raw ~= "<a";
+        frag.appendAttribute("href",  doc.href);
+        frag.appendAttribute("class", classes);
+        frag.raw ~= ">";
+
+        frag.escapeTextContent(doc.title);
+
+        frag.raw ~= "</a>\n";
+    }
+
+    frag.widgets::NavTree::update(:last_href);
+
+    return frag.raw;
+}
+
+fn toc_render(toc: markdown::Anchor[])
+{
+    mut frag: html::Fragment;
+
+    // No point in emitting a single-position page TOC, looks lame.
+    if (toc.len < 2)
+        return "";
+
+    for (mut i = 0; i < toc.len; i++)
+    {
+        let item = toc[i];
+
+        frag.raw ~= "<a";
+        frag.appendAttribute("href",  item.href);
+        frag.appendAttribute("class", "toc-item toc-" ~ item.kind.headingLevel);
+        frag.raw ~= ">";
+
+        frag.escapeTextContent(item.title);
+
+        frag.raw ~= "</a>\n";
+    }
+
+    return frag.raw;
+}
+
+
+//
+
+fn render_link(doc: Document, id!snippet: string)
+{
+    mut frag: html::Fragment;
+
+    if (doc.href)
+        frag.appendSnippet(
+            snippet,
+            get: |id| id == "href"  ? doc.href
+                    : id == "title" ? doc.title
+                                    : "[ERROR Unknown template id(" ~ id ~ ")]");
+
+    return frag.raw;
+}
+
+
+//
+
+fn home_demo_render(docs: Document[])
+{
+    mut frag: html::Fragment;
+
+    struct DemoLink {
+        doc_idx:        int;
+        code:           string;
+    };
+
+    mut links: DemoLink[];
+
+    docs.each: |doc, i!doc_idx|
+    {
+        let minLinesHidden  =  5;
+        let minLinesShown   = 10;
+        let idealLines      = 15;
+        let maxLinesShown   = 20;
+        let maxLinesHidden  = 25;
+
+        mut bestDiffLines   = int.MAX;
+        mut bestSnippet     = "";
+
+        doc.code_snippets.each: |snip|
+        {
+            for (mut attempt = 0; attempt < 2; attempt++)
+            {
+                mut code = snip.code;
+
+                mut minLines = minLinesShown;
+                mut maxLines = maxLinesShown;
+
+                // Clear hidden snippets.
+                if (attempt == 0)
+                {
+                    minLines = minLinesHidden;
+                    maxLines = maxLinesHidden;
+
+                    for (;;) {
+                        let i0 = code.find("<span");
+                        if (i0 >= 0) {
+                            let i1 = code.find("</span>", start: i0);
+                            if (i1 > i0) {
+                                code[i0 .. i1 + 7] = "";
+                                continue;
+                            }
+                        }
+
+                        break;
+                    }
+                }
+                else
+                {
+                    for (;;) {
+                        let i0 = code.find("<span");
+                        if (i0 >= 0) {
+                            let i1 = code.find(">", start: i0);
+                            if (i1 > i0) {
+                                code[i0 .. i1 + 1] = "";
+                                continue;
+                            }
+                        }
+
+                        let i1 = code.find("</span>");
+                        if (i1 >= 0)
+                            code[i1 .. i1 + 7] = "";
+
+                        break;
+                    }
+                }
+
+                //
+                if (snip.annots.has("best"))
+                {
+                    bestSnippet = code;
+                    break;
+                }
+
+                //
+                let numLines    = code.split('\n').len;
+                let diffLines   = abs(numLines - idealLines);
+
+                if (numLines < minLines || numLines > maxLines)
+                    continue;
+
+                if (bestDiffLines   > diffLines)
+                {
+                    bestDiffLines   = diffLines;
+                    bestSnippet     = code;
+                }
+            }
+        }
+
+        if (bestSnippet)
+            links ~= DemoLink(:doc_idx, code: bestSnippet);
+    }
+
+    links.each: |link|
+    {
+        let doc = docs[link.doc_idx];
+
+        frag.appendSnippet(
+            "card-open",
+            get: |id| id == "href"  ? doc.href
+                    : id == "title" ? doc.title
+                                    : "[ERROR Unknown template id(" ~ id ~ ")]");
+
+        frag.raw ~= link.code;
+
+        frag.appendSnippet("card-close");
+    }
+
+    return frag.raw;
+}
+
+
+//
+
+fn main()
+{
+    mut docs: string[];
+    readdir_rec(DIR_CONTENT, ext: ".md"): |path|
+        docs ~= path;
+
+    //
+    shadow mut docs = docs.par::map(|path|
+    {
+        let plaintext = file::read(path);
+
+        let pp = parsePath(path);
+        mut markdown = markdown::parse(plaintext);
+        code::snippets::preprocess(markdown);
+
+        Document(:pp, :path, :plaintext, :markdown)
+    });
+
+    // TODO FIX this should be a tree really
+    docs.sort(|a, b| getLexicographicOrder(a.path, b.path) < 0);
+
+    //
+    resolveLinks(docs);
+
+    //
+    implicit TEMPLATE = template_prepare(
+        file::read("content/template.html"));
+
+    // Quick test.
+    let diagnostics = docs.par::map(|doc, i!doc_idx|
+    {
+        let out_path    = doc.output_dir ~ doc.output_file;
+
+        fs::mkdir_p(path::dirname(out_path));
+
+
+        //
+
+        let custom_html = file::read(
+            doc.path[.. doc.path.len - 3] ~ ".html");
+
+        fn page_render(mode?: markdown::html::RenderMode)
+        {
+            if (custom_html && mode == "HeaderOnly") try
+            {
+                shadow implicit TEMPLATE = template_prepare(custom_html);
+
+                return TEMPLATE.template_render(
+                    get: |id|
+                        id == "demo"
+                            ? home_demo_render(docs)
+                            : "[ERROR Unknown template id(" ~ id ~ ")]");
+            }
+            catch (e)
+            {
+                return "[ERROR " ~ e ~ "]";
+            }
+
+            return markdown::html::render(doc,
+                :mode,
+                anchors: mode != "HeaderOnly" && "h-anchor");
+        }
+
+
+        //
+
+        let html_page   = TEMPLATE.template_render(
+            get: |id, arg|
+                      id == "main"          ? page_render()
+                    : id == "main.header"   ? page_render("HeaderOnly")
+                    : id == "main.body"     ? page_render("BodyOnly")
+                    : id == "toc"           ? toc_render(doc.markdown.toc)
+                    : id == "nav"           ? sitemap_render(docs, :doc_idx)
+                    : id == "title"         ? doc.title
+
+                    : id == "prev" && arg   ? render_link(docs.if(exists: doc_idx - 1), id: arg)
+                    : id == "next" && arg   ? render_link(docs.if(exists: doc_idx + 1), id: arg)
+
+                                            : "[ERROR Unknown template id(" ~ id ~ ")]");
+
+        if (file::read(out_path) != html_page)
+        {
+            let err = file::write(out_path, html_page);
+            println("  WRITE doc(" doc.path ") write(" out_path ") len(" html_page.len ") err(" err ")");
+        }
+
+        ::check(html: html_page)
+    });
+
+    diagnostics.each: |reason, i| reason && docs[i].fail(reason);
+
+    // Here!
+    println("   DONE Bye!\n");
+
+    // Copy static stuff over.
+    {
+        let DIR_STATIC_OUT = DIR_BUILD ~ "/static";
+
+        mut status: spawn::ExitStatus;
+        mut stdout: string;
+
+        ::exec("rm -rf " ~ DIR_STATIC_OUT
+            ~ " && cp -r " ~ DIR_STATIC ~ " " ~ DIR_STATIC_OUT,
+                :status, :stdout);
+    }
+
+    return 0;
+}

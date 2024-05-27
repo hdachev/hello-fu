@@ -1,0 +1,191 @@
+import fu::src::module;
+import fu::src::helpers;
+
+import style;
+import by_token;
+
+
+// This is an attempt at a much more "classical" syntax highlighting scheme,
+//  where we just colorize the basic token types, and then do a syntactic pass
+//   to clear things up as much as possible.
+
+let CONTROL_FLOW = [
+    "if", "else",
+    "for", "while", "do",
+    "break", "continue", "return",
+    "try", "catch", "finally",
+    "case" ];
+
+let PRIMITIVE_LITERALS = [
+    "true", "false" ];
+
+let BASIC_TYPES = [
+    "int", "uint",
+    "i8", "u8", "i16", "u16", "i32", "u32",
+    "i64", "u64", "i128", "u128",
+    "f32", "f64",
+    "bool", "byte",
+    "void", "never", "[]",
+    "string" ];
+
+let DECLARATIONS = [
+    "let", "const", "mut", "val", "ref", "using", "implicit",
+    "fn", "pure", "nothrow", "nofx",
+    "struct", "nocopy",
+    "primitive", "union", "enum", "flags",
+    "pub", "shadow" ];
+
+
+//
+
+fn traverseRawTokens(
+    implicit module: Module,
+    fail)
+{
+    let tokens = module.in.lex.tokens;
+    for (mut i = 0; i < tokens.len; i++)
+    {
+        let t = tokens[i];
+
+        let k = t.kind;
+        let v = t.value;
+
+        if (k == "id")
+        {
+            if (CONTROL_FLOW.has(v))
+            {
+                applyColor(i, "ControlFlow");
+            }
+            else if (PRIMITIVE_LITERALS.has(v))
+            {
+                applyColor(i, "PrimitiveLiteral");
+            }
+            else if (BASIC_TYPES.has(v))
+            {
+                applyColor(i, "Type");
+            }
+            // else if (v == "let" || v == "const" ||
+            //     v == "fn" ||
+            //     v == "struct" || v == "union" ||
+            //     v == "enum" || v == "flags" || v == "primitive" ||
+            //     v == "import")
+            // {
+            //     applyColor(i, "Declaration");
+            // }
+            else :HEURISTIC
+            {
+                if (i)
+                {
+                    let prev = tokens[i - 1];
+                    if (prev.kind == "op" && prev.value == ":" &&
+                        prev.col + prev.chars == t.col)
+                    {
+                        applyColor(i, "Label", ifClear: true);
+
+                        break :HEURISTIC;
+                    }
+                }
+
+                tokens.if(exists: i + 1): |next|
+                {
+                    if (next.kind == "id")
+                    {
+                        applyColor(i, "Declaration");
+                    }
+                    else if (i)
+                    {
+                        let prev = tokens[i - 1];
+                        let v0 = prev.kind == "id" && prev.value;
+
+                        if (v0 == "let" || v0 == "implicit" || v0 == "using")
+                            heursticFloodfill(i, v, varColor(v, is_mutref: false));
+                        else if (v0 == "mut" || v0 == "ref")
+                            heursticFloodfill(i, v, varColor(v, is_mutref: true));
+                        else if (v0 == "fn")
+                            heursticFloodfill(i, v, "ImpureFn");
+                        else if (v0 == "struct" || v0 == "primitive" || v0 == "enum" || v0 == "flags" || v0 == "type")
+                            heursticFloodfill(i, v, "Type");
+                    }
+                }
+            }
+        }
+
+        else if (k == "op")
+        {
+            if (v == "{" || v == "}" || v == "(" || v == ")" || v == ";" || v == ",")
+            {
+                applyColor(i, Cruft);
+            }
+
+            if (v == ":" || v == "|")
+            {
+                if (i)
+                {
+                    let prev = tokens[i - 1];
+                    if (prev.col + prev.chars == t.col)
+                        applyColor(i, Cruft);
+                }
+            }
+
+            if (v == "|")
+            {
+                tokens.if(exists: i + 1): |next|
+                    if (t.col + t.chars == next.col)
+                        applyColor(i, Cruft);
+            }
+
+            // Same here.
+            //
+            //
+            // applyColor(i, "Builtin");
+        }
+
+        else if (k == "int" || k == "real" || k == "char")
+        {
+            applyColor(i, "PrimitiveLiteral");
+        }
+
+        else if (k == "str")
+        {
+            applyColor(i, "StringLiteral");
+        }
+    }
+}
+
+
+
+/*
+    declaration keyword:
+        function startWatcher, const now, ...
+                 ^^^^^^^^^^^^        ^^^
+            magenta, italic
+
+    declaration identifier
+        function startWatcher( ...
+                 ^^^^^^^^^^^^
+        orangey
+
+    control flow keyword:
+        for, continue ...
+
+            brown, regular
+
+    primitive literal
+        0, true, null
+
+            dark-red BOLD
+
+    string literal
+        'exit'
+
+            dark green
+
+    known global
+        document, Date, Math
+
+    known property
+        document.body
+
+    known method
+        Math.abs
+*/

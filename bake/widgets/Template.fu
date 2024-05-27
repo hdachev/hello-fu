@@ -1,0 +1,135 @@
+
+struct Snippet
+{
+    id:             string;
+    raw:            string;
+};
+
+struct Template
+{
+    layout:         string[];
+    snippets:       Snippet[];
+};
+
+fn template_prepare(src: string): Template
+{
+    mut last        = 0;
+    mut start       = 0;
+
+    using mut result: Template();
+
+    shadow fn fail(reason: string)
+    {
+        // TODO line coords from :start
+        throw("Invalid template: " ~ reason);
+    }
+
+    for (;;)
+    {
+        let begin_idx   = src.find("<!--", :start);
+        if (begin_idx < 0)
+            break;
+
+        let id_start    = start = begin_idx + 4;
+
+        let id_end      = src.find("-->", :start);
+        if (id_end < 0)
+            fail("Unterminated html comment.");
+
+        start           = id_end + 3;
+
+        layout         ~= src[last .. begin_idx].ascii::trim();
+        let id          = src[id_start .. id_end];
+
+        if (id.starts(with: "define "))
+        {
+            shadow let id   = id[7 ..];
+
+            let close_idx   = src.find("<!--end-->", :start);
+            if (close_idx < 0)
+                fail("<!--define--> missing a closing <!--end--> marker");
+
+            let snippet     = src[start .. close_idx].ascii::trim();
+            start           = close_idx + 10;
+
+            snippets       ~= Snippet(:id, snippet);
+            layout         ~= "";
+        }
+        else
+        {
+            layout         ~= id;
+        }
+
+        last            = start;
+    }
+
+    layout         ~= src[last ..];
+
+    return result;
+}
+
+fn template_render(src.layout: string[], get)
+{
+    mut result = "";
+    for (mut i = 0; i < src.len; i += 2)
+    {
+        result ~= src[i];
+        if (src.len > i + 1)
+        {
+            let id = src[i + 1];
+            if (id)
+            {
+                let space       = id.find(' ');
+                let arg         = space >= 0 && id[space + 1 ..];
+                shadow let id   = space >= 0 ? id[.. space] : id;
+
+                result ~= get(id, ?:arg);
+            }
+        }
+    }
+
+    return result;
+}
+
+
+//
+
+fn getSnippet(implicit TEMPLATE: Template, id: string)
+{
+    TEMPLATE.snippets.each: |snippet|
+        if (snippet.id == id)
+            return snippet.raw;
+
+    return "[ERROR unknown snippet id(" ~ id ~ ")]";
+}
+
+fn appendSnippet(ref frag: html::Fragment, id: string)
+{
+    frag.raw ~= getSnippet(id);
+}
+
+fn appendSnippet(ref frag: html::Fragment, id: string, get!)
+{
+    let snip    = getSnippet(id);
+
+    for (mut i = 0; i < snip.len; i++)
+    {
+        let c = snip[i];
+        if (c != '{')
+        {
+            frag.raw   ~= c;
+            continue;
+        }
+
+        i += 1;
+        let start = i;
+        for (; i < snip.len - 1; i++)
+        {
+            if (snip[i] == '}')
+            {
+                frag.escapeUnknown(get(snip[start .. i]));
+                break;
+            }
+        }
+    }
+}

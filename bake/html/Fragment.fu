@@ -1,0 +1,87 @@
+
+struct Fragment
+{
+    raw: string;
+}
+
+fn appendAttribute(ref frag: Fragment, name: string, value: string)
+{
+    frag.raw ~= ' ';
+    frag.raw ~= name;
+    frag.raw ~= "=\"";
+    frag.escapeDoubleQuotedAttributeValue(value);
+    frag.raw ~= '"';
+}
+
+fn class(ref frag: Fragment, classes[]: string[])
+{
+    mut some = false;
+    classes.each: |value|
+    {
+        if (!value)
+            continue;
+
+        frag.raw ~= some
+            ? " "
+            : { some = true; " class=\"" };
+
+        frag.escapeDoubleQuotedAttributeValue(value);
+    }
+
+    if (some)
+        frag.raw ~= '"';
+}
+
+fn escapeDoubleQuotedAttributeValue(ref frag: Fragment, str: string)
+{
+    mut last = 0;
+    for (mut i = 0; i < str.len; i++)
+    {
+        let c = str[i];
+        if (c == '"' || c == '&')
+        {
+            frag.raw   ~= str[last .. i];
+            frag.raw   ~= c == '&' ? "&amp;" : "&quot;";
+            last        = i + 1;
+        }
+    }
+
+    frag.raw ~= str[last ..];
+}
+
+fn escapeTextContent(ref frag: Fragment, str: string)
+{
+    mut last = 0;
+    for (mut i = 0; i < str.len; i++)
+    {
+        let c = str[i];
+        if (c == '<' || c == '&')
+        {
+            frag.raw   ~= str[last .. i];
+            frag.raw   ~= c == '&' ? "&amp;" : "&lt;";
+            last        = i + 1;
+        }
+    }
+
+    frag.raw ~= str[last ..];
+}
+
+fn escapeUnknown(ref frag: Fragment, str: string)
+{
+    mut last = 0;
+    for (mut i = 0; i < str.len; i++)
+    {
+        let c = str[i];
+        if (c == '<' || c == '&' || c == '"' || c == '\'')
+        {
+            frag.raw   ~= str[last .. i];
+            frag.raw   ~= c == '&'  ? "&amp;"
+                        : c == '"'  ? "&quot;"
+                        : c == '\'' ? "&apos;"
+                                    : "&lt;";
+            last        = i + 1;
+        }
+    }
+
+    frag.raw ~= str[last ..];
+}

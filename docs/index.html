@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/static/main.css">
+<link rel="icon" href="/static/favicon.svg">
+<title>Home&nbsp;— The Fu Programming Language</title>
+</head>
+<body>
+<script src="/static/main.js" async></script>
+<noscript><style> .needs-js { display: none; } </style></noscript>
+
+<input type="checkbox" id="hb-chkbx" class="hb-chkbx"/>
+
+<div class="cols">
+
+    <label class="hb-rest" for="hb-chkbx"></label>
+
+    <nav class="col-nav">
+        <div class="col-scroll">
+            <div class="col-header col-header-side"></div>
+            <div class="col-body"><a href="/motivation" class="nav-item nav-1">Motivation</a>
+<div class='nav-group'><div><input type='checkbox' class='nav-chkbx' id="tour-syntax-and-semantics" />
+<div class="nav-tree nav-2">
+<label class="nav-label nav-2" for="tour-syntax-and-semantics">Syntax &amp; Semantics<svg viewBox="0 0 16 16" class="i-line nav-chevron">
+<path d="M 5 2 L 11 8 L 5 14" />
+</svg></label>
+<div class='nav-children'><a href="/tour/syntax-and-semantics/ufcs" class="nav-item nav-3">Universal Function Call Syntax</a>
+<a href="/tour/syntax-and-semantics/overloading" class="nav-item nav-3">Overloading Without Ambiguity</a>
+<a href="/tour/syntax-and-semantics/semantics" class="nav-item nav-3">Value vs Reference Semantics</a>
+</div></div>
+<input type='checkbox' class='nav-chkbx' id="tour-control-flow" />
+<div class="nav-tree nav-2">
+<label class="nav-label nav-2" for="tour-control-flow">Control Flow<svg viewBox="0 0 16 16" class="i-line nav-chevron">
+<path d="M 5 2 L 11 8 L 5 14" />
+</svg></label>
+<div class='nav-children'><a href="/tour/control-flow/short-circuit" class="nav-item nav-3">Short-Circuit Operators</a>
+<a href="/tour/control-flow/labels" class="nav-item nav-3">Local &amp; Foreign Labels</a>
+<a href="/tour/control-flow/iteration" class="nav-item nav-3">Iteration</a>
+</div></div>
+<input type='checkbox' class='nav-chkbx' id="tour-types-and-reflection" />
+<div class="nav-tree nav-2">
+<label class="nav-label nav-2" for="tour-types-and-reflection">Types &amp; Reflection<svg viewBox="0 0 16 16" class="i-line nav-chevron">
+<path d="M 5 2 L 11 8 L 5 14" />
+</svg></label>
+<div class='nav-children'><a href="/tour/types-and-reflection/structures" class="nav-item nav-3">Structures &amp; Reflection</a>
+<a href="/tour/types-and-reflection/user-defined-primitive-types" class="nav-item nav-3">Enums, Flags &amp; Primitives</a>
+<a href="/tour/types-and-reflection/built-in-types" class="nav-item nav-3">Built-in Types</a>
+<a href="/tour/types-and-reflection/template-types" class="nav-item nav-3">Template Types</a>
+</div></div>
+<input type='checkbox' class='nav-chkbx' id="tour-scope" />
+<div class="nav-tree nav-2">
+<label class="nav-label nav-2" for="tour-scope">Scope<svg viewBox="0 0 16 16" class="i-line nav-chevron">
+<path d="M 5 2 L 11 8 L 5 14" />
+</svg></label>
+<div class='nav-children'><a href="/tour/scope/lexical-scope" class="nav-item nav-3">Lexical Scope &amp; Shadowing</a>
+<a href="/tour/scope/implicit" class="nav-item nav-3">“implicit” Argument Passing</a>
+<a href="/tour/scope/using" class="nav-item nav-3">The “using” Keyword</a>
+</div></div>
+</div></div>
+<a href="/target-audience" class="nav-item nav-1">Who Is This For?</a>
+<a href="/bootstrap" class="nav-item nav-1">Getting Started</a>
+<a href="https://github.com/hdachev/fu" target="_blank" class="nav-item">
+                GitHub
+                <svg viewBox="0 0 16 16" class="i-line">
+                <path d="M 7 2 L 13 8 L 7 14 M 13 8 L 1 8" />
+                </svg>
+            </a>
+            </div>
+        </div>
+    </nav>
+
+    <nav class="col-toc">
+        <div class="col-scroll">
+            <div class="col-header col-header-side"></div>
+            <div class="col-body"></div>
+        </div>
+    </nav>
+
+    <main class="col-main">
+        <div class="col-header"><style>
+
+.candy {
+    display:            block;
+    height:             40vh;
+    height:             40svh;
+
+    background:
+        linear-gradient(
+            45deg,
+            var(--hi-red) 40%,
+            var(--hi-orange) 40%,
+            var(--hi-orange) 60%,
+            var(--hi-cyan) 60%,
+            var(--hi-cyan) 80%,
+            var(--hi-blue) 80%,
+            var(--hi-blue) 90%,
+            var(--hi-green) 90%);
+
+    display:            flex;
+    flex-flow:          column nowrap;
+    justify-content:    flex-end;
+}
+
+.candy-logo {
+    max-width:          unset;
+
+    --width:            13.20vh;
+    color:              var(--txt-top);
+    color:              white;
+    color:              var(--bgr-main);
+    margin-bottom:      0rem;
+
+    width:              var(--width);
+    margin-top:         calc(-0.975 * var(--width));
+}
+
+.full-width {
+    margin-left:        calc(-1 * var(--pad-left));
+    margin-right:       calc(-1 * var(--pad-right));
+    padding-left:       var(--pad-left);
+    padding-right:      var(--pad-right);
+}
+
+.demo {
+    overflow-x:         scroll;
+
+    scroll-snap-type:   x mandatory;
+
+    display:            flex;
+    flex-flow:          row nowrap;
+    align-items:        stretch;
+
+    padding:            1rem calc(var(--gutter) - var(--gutter-inner));
+}
+
+.demo code {
+    overflow:           hidden;
+
+    border:             none;
+    background:         none;
+    margin:             0;
+    padding:            0;
+}
+
+.demo pre {
+    flex-grow:          1;
+
+    margin:             0 calc(-1 * var(--gutter-inner));
+    padding:            .5rem var(--gutter-inner);
+    background:         var(--bgr-box);
+
+    margin-top:         .5rem;
+}
+
+.demo-link {
+    display:            block;
+    text-decoration:    none;
+
+    scroll-snap-align:  center center;
+
+    max-width:          45rem;
+    width:              calc(
+        100% - var(--pad-left)
+             - var(--pad-right));
+
+    flex-grow:          0;
+    flex-shrink:        0;
+
+    display:            flex;
+    flex-flow:          column nowrap;
+
+    background:         var(--bgr-main);
+    padding:            0 var(--gutter-inner);
+}
+
+.demo-link:not(:first-child) {
+    border-left:        1px solid var(--clr-borders);
+}
+
+@media (hover: hover) {
+    .demo-link:hover {
+        background:         var(--bgr-box);
+    }
+}
+
+.col-toc {
+    visibility:         hidden;
+}
+
+.demo-link>*:first-child {
+    margin-top:         1em;
+}
+
+.webkit .demo-link {
+
+    /* Firefox 115: position: sticky messes up scroll-snap 2024-05-27 */
+
+    position:           sticky;
+    left:               calc(-1 * var(--gutter) + var(--gutter-inner) - 1px);
+}
+
+.candy-motto { margin-top: 2rem; margin-bottom: 0rem; }
+
+</style>
+
+<div class="full-width candy dark">
+</div>
+
+<svg viewBox="0 0 1011 999" class="logo candy-logo">
+<path class="shape" d="M0 999L245 999L245 612L395 612L395 616C387 884,498 999,766 999L1011 999L1011 383L766 383L766 773C654 773,616 736,616 624L616 383L245 383C245 283,295 233,395 233L616 233L616 0L383 0C128 0,0 128,0 383L0 999Z "></path>
+</svg>
+
+<p class="candy-motto">A research language exploring a pragmatic, highly expressive set of implicit programming techniques. <strong>We want to build better software by writing less code.</strong></p>
+
+<div class="demo full-width"><a class="demo-link" href="/tour/syntax-and-semantics/ufcs">
+<div class="lnk-lbl">Feature Highlight</div>
+<div class="lnk-ttl">Universal Function Call Syntax</div>
+<pre><code><s class='c1'>struct</s> <s class='C4'>Dog</s> {
+    name:       <s class='C4'>string</s>;
+    dog_years:  <s class='C4'>int</s>;
+}
+
+</span><s class='c1'>fn</s> <s class='C2'>Dog</s>(<s class='c6'>name</s>: <s class='C4'>string</s>, <s class='c6'>human_years</s>: <s class='C4'>int</s>) {
+    <s class='c1'>mut</s> <s class='C0'>dog_years</s> = <s class='c6'>human_years</s>;
+    <s class='c2'>if</s> (<s class='C0'>dog_years</s> > <s class='c5'>10</s>) <s class='C0'>dog_years</s> -= <s class='c5'>10</s>;
+    <s class='c2'>if</s> (<s class='C0'>dog_years</s> > <s class='c5'>14</s>) <s class='C0'>dog_years</s> -= <s class='c5'>4</s>;
+
+    <s class='C0'>dog_years</s> /= <s class='c5'>5</s>;
+    <s class='c2'>return</s> <s class='C3'>Dog</s>(:<s class='C0'>dog_years</s>, :<s class='c6'>name</s>);
+}
+
+<s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C2'>Dog</s>(<s class='c4'>"Robbie"</s>, human_years: <s class='c5'>34</s>).dog_years - <s class='c5'>4</s>;
+</code></pre>
+</a><a class="demo-link" href="/tour/syntax-and-semantics/overloading">
+<div class="lnk-lbl">Feature Highlight</div>
+<div class="lnk-ttl">Overloading Without Ambiguity</div>
+<pre><code><s class='c1'>struct</s> <s class='C4'>BitSet</s> { data: <s class='C4'>u8</s>[] };
+
+<s class='c1'>infix</s> fn <s class='C3'>|=</s>(ref .<s class='C0'>data</s> left, .<s class='c6'>data</s> right) {
+    <s class='C0'>left</s>.grow(max(<s class='C0'>left</s>.len, <s class='c6'>right</s>.len));
+    <s class='c6'>right</s>.each: |<s class='c7'>v</s>, <s class='c7'>i</s>| <s class='C0'>left</s>[<s class='c7'>i</s>] |= <s class='c7'>v</s>;
+}
+
+<s class='c1'>fn</s> <s class='C2'>main</s>() {
+    <s class='c1'>mut</s> <s class='C1'>a</s> = <s class='C4'>BitSet</s>([ <s class='c5'>7</s>.u8 ]);
+    <s class='C1'>a</s> <s class='C3'>|=</s> <s class='C4'>BitSet</s>([ <s class='c5'>9</s>.u8 ]);
+    <s class='C1'>a</s>.<s class='C1'>data</s>[<s class='c5'>0</s>] == <s class='c5'>15</s> ? <s class='c5'>0</s> : <s class='c5'>1</s>
+}
+</span></code></pre>
+</a><a class="demo-link" href="/tour/syntax-and-semantics/semantics">
+<div class="lnk-lbl">Feature Highlight</div>
+<div class="lnk-ttl">Value vs Reference Semantics</div>
+<pre><code><s class='c1'>fn</s> <s class='C3'>test</s>(<s class='c1'>ref</s> <s class='C0'>place</s>, <s class='c1'>const</s> <s class='c6'>value</s>) {
+</span>    <s class='c1'>let</s> <s class='c1'>const</s> <s class='c1'>val</s> <s class='c7'>a</s> = <s class='C0'>place</s> || <s class='c6'>value</s>;
+    <s class='c1'>let</s>   <s class='c1'>mut</s> <s class='c1'>val</s> <s class='C1'>b</s> = <s class='C0'>place</s> || <s class='c6'>value</s>;
+
+    <s class='c1'>let</s> <s class='c1'>const</s> <s class='c1'>ref</s> <s class='c7'>c</s> = <s class='C0'>place</s>;
+    <s class='c1'>let</s>   <s class='c1'>mut</s> <s class='c1'>ref</s> <s class='C1'>d</s> = <s class='C0'>place</s>;
+
+    <s class='C0'>d</s> += <s class='C1'>b</s> += <s class='c7'>c</s> + <s class='c7'>a</s>;
+}
+
+<s class='c1'>fn</s> <s class='C2'>main</s>() {
+    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>0</s>;
+    <s class='C3'>test</s>(<s class='C1'>v</s>, <s class='C1'>v</s>);
+    <s class='c2'>return</s> <s class='C1'>v</s>;
+}
+</span></span></code></pre>
+</a><a class="demo-link" href="/tour/control-flow/short-circuit">
+<div class="lnk-lbl">Feature Highlight</div>
+<div class="lnk-ttl">Short-Circuit Operators</div>
+<pre><code></span><s class='c1'>fn</s> <s class='C2'>if</s>(<s class='c6'>argv</s>: _[], <s class='c7'>exists</s>!i: <s class='C4'>int</s>)
+    <s class='c6'>argv</s>.len > <s class='c7'>i</s> &amp;&amp; <s class='c6'>argv</s>[<s class='c7'>i</s>];
+
+<s class='c1'>fn</s> <s class='C3'>main</s>(<s class='c6'>argv</s>: <s class='C4'>string</s>[]) {
+    <s class='c1'>let</s> <s class='c6'>name</s> = <s class='c6'>argv</s>.<s class='C2'>if</s>(exists: <s class='c5'>1</s>).<s class='C2'>trimmed</s> || {
+        println(<s class='c4'>"Usage: greet [name]"</s>);
+        <s class='c2'>return</s> <s class='c5'>1</s>;
+    };
+
+    println(<s class='c4'>"Hello, "</s> <s class='c6'>name</s> <s class='c4'>"!"</s>);
+    <s class='c2'>return</s> <s class='c5'>0</s>;
+}
+</code></pre>
+</a><a class="demo-link" href="/tour/control-flow/labels">
+<div class="lnk-lbl">Feature Highlight</div>
+<div class="lnk-ttl">Local &amp; Foreign Labels</div>
+<pre><code></span>    :<s class='C5'>OUTER_LOOP</s>
+    recipes.each: |<s class='c6'>recipe</s>| {
+        <s class='c1'>fn</s> <s class='C3'>fail</s>(<s class='c6'>reason</s>: <s class='C4'>string</s>) {
+            println(<s class='c4'>"Cannot prepare "</s> <s class='c6'>recipe</s>.<s class='c6'>name</s> <s class='c4'>": "</s> reason);
+            <s class='c2'>continue</s> :<s class='C5'>OUTER_LOOP</s>;
+        }
+
+        <s class='c6'>recipe</s>.<s class='c6'>ingredients</s>.each: |<s class='c6'>ingredient</s>|
+            <s class='c2'>if</s> !(<s class='c6'>fridge</s>.has(<s class='c6'>ingredient</s>))
+                <s class='C3'>fail</s>(<s class='c4'>"We don't have "</s> ~ <s class='c6'>ingredient</s>);
+
+        <s class='c2'>return</s> <s class='c6'>recipe</s>;
+    }
+</span></code></pre>
+</a><a class="demo-link" href="/tour/control-flow/iteration">
+<div class="lnk-lbl">Feature Highlight</div>
+<div class="lnk-ttl">Iteration</div>
+<pre><code><s class='c1'>fn</s> <s class='C3'>increment_even_until</s>(<s class='c1'>ref</s> <s class='C0'>numbers</s>: <s class='C4'>int</s>[], <s class='c6'>needle</s>: <s class='C4'>int</s>) {
+    <s class='c2'>for</s> (<s class='c1'>mut</s> <s class='C1'>i</s> = <s class='c5'>0</s>; <s class='C1'>i</s> &lt; <s class='C0'>numbers</s>.len; <s class='C1'>i</s>++) {
+        <s class='c1'>ref</s> <s class='C0'>num</s> = <s class='C0'>numbers</s>[<s class='C1'>i</s>];
+
+        <s class='c2'>if</s> (<s class='C0'>num</s> &amp; <s class='c5'>1</s>)            <s class='c2'>continue</s>;
+        <s class='c2'>if</s> (<s class='C0'>num</s> == <s class='c6'>needle</s>)      <s class='c2'>break</s>;
+        <s class='c2'>if</s> (<s class='C0'>num</s> > <s class='c6'>needle</s> * <s class='c5'>2</s>)   <s class='c2'>return</s> <s class='C0'>num</s>;
+
+        <s class='C0'>num</s>++;
+    }
+
+    <s class='c2'>return</s> -<s class='c5'>1</s>;
+}
+</span></code></pre>
+</a><a class="demo-link" href="/tour/types-and-reflection/structures">
+<div class="lnk-lbl">Feature Highlight</div>
+<div class="lnk-ttl">Structures &amp; Reflection</div>
+<pre><code><s class='c1'>struct</s> <s class='C4'>Person</s> {
+    name:       <s class='C4'>string</s>;
+    age:        <s class='C4'>int</s>;
+}
+
+</span><s class='c1'>fn</s> <s class='C3'>pretty_print</s>(<s class='c6'>value</s>: <s class='C4'>Person</s>) {
+    println(<s class='c4'>"Person {"</s>);
+    <s class='c2'>for</s> (<s class='c1'>fieldname</s> i: <s class='C4'>Person</s>)
+        println(<s class='c4'>"    "</s> ~ <s class='c4'>"i"</s> ~ <s class='c4'>": "</s> <s class='c6'>value</s>.<s class='c6'>i</s>);
+
+    println(<s class='c4'>"}"</s>);
+}
+
+<s class='c1'>fn</s> <s class='C2'>main</s>() {
+    <s class='c1'>let</s> <s class='c7'>p</s> = <s class='C4'>Person</s>(<s class='c4'>"Albert"</s>, <s class='c5'>26</s>);
+    <s class='c2'>return</s> <s class='c7'>p</s>.<s class='c7'>name</s>.len + <s class='c7'>p</s>.<s class='c7'>age</s> - <s class='c5'>32</s>;
+}
+</span></span></code></pre>
+</a><a class="demo-link" href="/tour/types-and-reflection/user-defined-primitive-types">
+<div class="lnk-lbl">Feature Highlight</div>
+<div class="lnk-ttl">Enums, Flags &amp; Primitives</div>
+<pre><code><s class='c1'>primitive</s> <s class='C4'>Distance</s>: <s class='C4'>f32</s> {
+    Meter       = <s class='c5'>1</s>;
+    Kilometer   = <s class='c5'>1000</s>;
+};
+
+<s class='c1'>fn</s> <s class='C2'>main</s>() {
+    assert(<s class='c5'>1000</s> * <s class='C4'>Distance</s>.Meter == <s class='C4'>Distance</s>.Kilometer);
+    <s class='c2'>return</s> <s class='c5'>0</s>;
+}
+</span></code></pre>
+</a><a class="demo-link" href="/tour/types-and-reflection/template-types">
+<div class="lnk-lbl">Feature Highlight</div>
+<div class="lnk-ttl">Template Types</div>
+<pre><code><s class='C2'>struct</s> <s class='C4'>Pair</s>(<s class='c1'>type</s> <s class='C4'>Left</s>, <s class='c1'>type</s> <s class='C4'>Right</s>) {
+    left:   <s class='C4'>Left</s>;
+    right:  <s class='C4'>Right</s>;
+}
+
+<s class='c1'>fn</s> <s class='C2'>fst</s>(<s class='c6'>pair</s>: <s class='C4'>Pair</s>(&lt;<s class='C4'>Left</s>>, _)): <s class='C4'>Left</s> =
+    <s class='c6'>pair</s>.<s class='c6'>left</s>;
+
+<s class='c1'>fn</s> <s class='C2'>snd</s>(<s class='c6'>pair</s>: <s class='C4'>Pair</s>(_, &lt;<s class='C4'>Right</s>>)): <s class='C4'>Right</s> =
+    <s class='c6'>pair</s>.<s class='c6'>right</s>;
+
+<s class='c1'>fn</s> <s class='C2'>sum</s>(<s class='c6'>pair</s>: <s class='C4'>Pair</s>(&lt;T>, T))
+    <s class='c2'>case</s> (T.is::arithmetic): T =
+        <s class='c6'>pair</s>.<s class='C2'>fst</s> + <s class='c6'>pair</s>.<s class='C2'>snd</s>;
+</span></code></pre>
+</a><a class="demo-link" href="/tour/scope/lexical-scope">
+<div class="lnk-lbl">Feature Highlight</div>
+<div class="lnk-ttl">Lexical Scope &amp; Shadowing</div>
+<pre><code></span><s class='c1'>fn</s> <s class='C3'>visit_each</s>(<s class='c6'>items</s>: <s class='C4'>Node</s>[], <s class='c1'>ref</s> <s class='C0'>count</s>: <s class='C4'>int</s>) {
+    <s class='c6'>items</s>.each(<s class='c6'>.</s><s class='C3'>visit</s>(:<s class='C0'>count</s>));
+}
+
+<s class='c1'>fn</s> <s class='C3'>visit</s>(<s class='c6'>node</s>: <s class='C4'>Node</s>, <s class='c1'>ref</s> <s class='C0'>count</s>: <s class='C4'>int</s>) {
+    <s class='C0'>count</s>++;
+    <s class='c6'>node</s>.<s class='c6'>items</s>.<s class='C3'>visit_each</s>(:<s class='C0'>count</s>);
+}
+
+<s class='c1'>fn</s> <s class='C2'>count</s>(<s class='c6'>node</s>: <s class='C4'>Node</s>) {
+    <s class='c1'>mut</s> <s class='C0'>count</s> = <s class='c5'>0</s>;
+    <s class='c6'>node</s>.<s class='C3'>visit</s>(:<s class='C0'>count</s>);
+    <s class='c2'>return</s> <s class='C0'>count</s>;
+}
+</span></code></pre>
+</a><a class="demo-link" href="/tour/scope/implicit">
+<div class="lnk-lbl">Feature Highlight</div>
+<div class="lnk-ttl">“implicit” Argument Passing</div>
+<pre><code><s class='c1'>struct</s> <s class='C4'>Module</s>       { filename: <s class='C4'>string</s> }
+<s class='c1'>struct</s> <s class='C4'>LineCol</s>      { line: <s class='C4'>int</s>; col: <s class='C4'>int</s> }
+<s class='c1'>struct</s> <s class='C4'>Diagnostic</s>   { filename: <s class='C4'>string</s>; lc: <s class='C4'>LineCol</s>; error: <s class='C4'>string</s> }
+
+<s class='c1'>fn</s> <s class='C3'>emit_diagnostic</s>(<s class='c6'>error</s>:       <s class='C4'>string</s>,
+    <s class='c1'>implicit</s> <s class='c6'>module</s>:            <s class='C4'>Module</s>,
+    <s class='c1'>implicit</s> <s class='c6'>lc</s>:                <s class='C4'>LineCol</s>,
+    <s class='c1'>implicit</s> <s class='c1'>ref</s> <s class='C0'>diagnostics</s>:   <s class='C4'>Diagnostic</s>[])
+{
+    <s class='C0'>diagnostics</s> ~= <s class='C4'>Diagnostic</s>(:<s class='c6'>module</s>.<s class='c6'>filename</s>, :<s class='c6'>lc</s>, :<s class='c6'>error</s>);
+}
+
+<s class='c1'>fn</s> <s class='C3'>parse_bool</s>(<s class='c6'>span</s>: <s class='C4'>byte</s>[]) {
+    <s class='c2'>if</s> (<s class='c6'>span</s> == <s class='c4'>"true"</s>)
+        <s class='c2'>return</s> <s class='c5'>true</s>;
+
+    <s class='c2'>if</s> (<s class='c6'>span</s> != <s class='c4'>"false"</s>)
+        <s class='C3'>emit_diagnostic</s>(<s class='c4'>"Invalid bool literal: "</s> ~ <s class='c6'>span</s>);
+
+    <s class='c2'>return</s> <s class='c5'>false</s>;
+}
+</span></code></pre>
+</a><a class="demo-link" href="/tour/scope/using">
+<div class="lnk-lbl">Feature Highlight</div>
+<div class="lnk-ttl">The “using” Keyword</div>
+<pre><code><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> };
+<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> };
+
+<s class='c1'>fn</s> <s class='C3'>move</s>(<s class='c1'>ref</s> <s class='C0'>player</s>: <s class='C4'>Player</s>, <s class='c6'>dist</s>: <s class='C4'>vec2</s>) {
+    <s class='C0'>player</s>.<s class='C0'>position</s>.<s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>;
+    <s class='C0'>player</s>.<s class='C0'>position</s>.<s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>;
+}
+
+<s class='c1'>fn</s> <s class='C2'>main</s>() {
+    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>;
+    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>));
+    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>);
+    <s class='c2'>return</s> <s class='c5'>0</s>;
+}
+</span></code></pre>
+</a><a class="demo-link" href="/bootstrap">
+<div class="lnk-lbl">Feature Highlight</div>
+<div class="lnk-ttl">Getting Started</div>
+<pre><code>Hello! This is Fu v0.0.1
+
+To get started:
+    echo 'fn main() println("Hello world!");' >> hello.fu
+
+Build it:
+    ~/fu/bin/fu -b hello.fu
+
+Run it:
+    ./hello
+        Hello world!</code></pre>
+</a></div>
+
+<script>
+
+let rnd = (Date.now() / 1000000) >>> 0;
+
+function rand() {
+    rnd = (rnd ^ (rnd << 13)) >>> 0;
+    rnd = (rnd ^ (rnd >> 17)) >>> 0;
+    rnd = (rnd ^ (rnd <<  5)) >>> 0;
+    return rnd / 0x100000000;
+}
+
+function initDemo() {
+    let interval    = 0;
+    let last_now    = 0;
+
+    let WAIT_long   = 15000;
+    let WAIT_short  = 10000;
+
+    let WAIT        = WAIT_long;
+
+    function dont_overdo_it() {
+        last_now    = Date.now();
+    }
+
+    function clear() {
+        if (interval)
+            clearInterval(interval);
+
+        interval    = 0;
+    }
+
+    function reset() {
+        clear();
+        interval    = setInterval(scrollToRandomItem, 1000);
+
+        dont_overdo_it();
+    }
+
+    let demo = document.querySelector(".demo");
+
+    let N = demo.children.length;
+    for (let i = N; i >= 0; i--)
+        demo.appendChild(demo.children[rand() * i | 0]);
+
+    function scrollToRandomItem() {
+        let now     = Date.now();
+        let td      = Math.abs(now - (last_now || (last_now = now)));
+        if (td      < WAIT) return;
+
+        WAIT        = WAIT_short;
+        last_now    = now;
+
+        let current = demo.scrollLeft;
+        let max     = demo.scrollWidth;
+
+        let slide   = max / N;
+        let next    = current + slide;
+        if (next    > max - slide)
+            next    = 0;
+
+        demo.scroll({ left: next, behavior: "smooth" });
+    }
+
+    let mediaQuery = window.matchMedia
+                  && window.matchMedia('(hover: hover)');
+
+    if (mediaQuery && mediaQuery.matches) {
+        demo.addEventListener("mouseenter", clear);
+        demo.addEventListener("mouseleave", reset);
+    }
+    else {
+        document.body.addEventListener("pointerdown", e => {
+            e = e.target;
+            while (e) {
+                if (e == demo) return clear();
+                e = e.parentNode;
+            }
+
+            return reset();
+        });
+
+        // Mobile, shorter attention spans.
+        WAIT_short  /= 2;
+        WAIT_long   /= 2;
+        WAIT        /= 2;
+    }
+
+    demo.addEventListener("scroll", dont_overdo_it);
+    window.addEventListener("focus", dont_overdo_it);
+
+    reset();
+
+    if (/WebKit/.test(navigator.userAgent))
+        demo.classList.add("webkit");
+}
+
+initDemo();
+
+</script>
+</div>
+        <div class="col-body"></div>
+        <div class="col-foot">
+            <div class="ftlnk-pair"><a class="ftlnk next" href="/motivation">
+    <div class="lnk-lbl">Next</div>
+    <div class="lnk-ttl">Motivation</div>
+</a></div>
+        </div>
+
+    </main>
+
+</div>
+
+<footer class="page-foot">
+
+    <svg viewBox="0 0 1011 999" class="logo">
+    <path class="shape" d="M0 999L245 999L245 612L395 612L395 616C387 884,498 999,766 999L1011 999L1011 383L766 383L766 773C654 773,616 736,616 624L616 383L245 383C245 283,295 233,395 233L616 233L616 0L383 0C128 0,0 128,0 383L0 999Z "></path>
+    </svg>
+
+</footer>
+
+<nav class="tb">
+    <label for="hb-chkbx" class="tb-tl tb-btn tb-burg">
+        <svg viewBox="0 0 16 16" class="i-line">
+        <path d="M 2 4 L 14 4 M 2 8 L 14 8 M 2 12 L 14 12" />
+        </svg>
+    </label>
+    <a href="/" class="tb-title"><i>The</i> Fu <i>Programming Language</i></a>
+
+    <a href="https://github.com/hdachev/fu" target="_blank" title="Github:
+The Fu Programming Language" class="tb-tr tb-btn tb-github">
+        <svg viewBox="0 1 98 98" class="i-fill">
+        <path d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" />
+        </svg>
+    </a>
+
+    <a class="tb-tr tb-btn tb-theme tb-sun needs-js">
+        <svg viewBox="0 0 32 32" class="i-fill" style="font-size: 1.25em">
+            <path d="M16,12a4,4,0,1,1-4,4,4.0045,4.0045,0,0,1,4-4m0-2a6,6,0,1,0,6,6,6,6,0,0,0-6-6Z" transform="translate(0 0.0049)"/>
+            <rect x="6.8536" y="5.3745" width="1.9998" height="4.958" transform="translate(-3.253 7.8584) rotate(-45)"/>
+            <rect x="2" y="15.0049" width="5" height="2"/>
+            <rect x="5.3745" y="23.1466" width="4.958" height="1.9998" transform="translate(-14.7739 12.6305) rotate(-45)"/>
+            <rect x="15" y="25.0049" width="2" height="5"/>
+            <rect x="23.1466" y="21.6675" width="1.9998" height="4.958" transform="translate(-10.0018 24.1514) rotate(-45)"/>
+            <rect x="25" y="15.0049" width="5" height="2"/>
+            <rect x="21.6675" y="6.8536" width="4.958" height="1.9998" transform="translate(1.5191 19.3793) rotate(-45)"/>
+            <rect x="15" y="2.0049" width="2" height="5"/>
+        </svg>
+    </a>
+
+    <a class="tb-tr tb-btn tb-theme tb-moon needs-js">
+        <svg viewBox="0 0 32 32" class="i-fill" style="font-size: 1.15em">
+            <path d="M13.5025,5.4136A15.0755,15.0755,0,0,0,25.096,23.6082a11.1134,11.1134,0,0,1-7.9749,3.3893c-.1385,0-.2782.0051-.4178,0A11.0944,11.0944,0,0,1,13.5025,5.4136M14.98,3a1.0024,1.0024,0,0,0-.1746.0156A13.0959,13.0959,0,0,0,16.63,28.9973c.1641.006.3282,0,.4909,0a13.0724,13.0724,0,0,0,10.702-5.5556,1.0094,1.0094,0,0,0-.7833-1.5644A13.08,13.08,0,0,1,15.8892,4.38,1.0149,1.0149,0,0,0,14.98,3Z"/>
+        </svg>
+    </a><a class="tb-tr tb-btn next" href="/motivation" title="Next:
+Motivation">
+    <svg viewBox="0 0 16 16" class="i-line">
+    <path d="M 7 2 L 13 8 L 7 14 M 13 8 L 1 8" />
+    </svg>
+</a></nav>
+
+</body>
+</html>

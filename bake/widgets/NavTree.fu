@@ -1,0 +1,197 @@
+import Template;
+
+fn intoTitle(str: string)
+{
+    mut title = "";
+
+    mut word_boundary = true;
+    for (mut i = 0; i < str.len; i++)
+    {
+        mut c = str[i];
+
+        let isLowerAlpha    = c >= 'a' && c <= 'z';
+        let isAlphaNum      = isLowerAlpha  || c >= 'A' && c <= 'Z'
+                                            || c >= '0' && c <= '9';
+        if (isAlphaNum)
+        {
+            if (word_boundary)
+            {
+                if (title)
+                    title ~= ' ';
+
+                if (isLowerAlpha)
+                    c = byte(c.int + ('A'.int - 'a'.int));
+            }
+
+            title ~= c;
+        }
+
+        word_boundary = !isAlphaNum;
+    }
+
+    return title.replace(all: " And ", " & ");
+}
+
+fn path_travel(from: string, to: string, leave!?, enter!?)
+{
+    let min = from.len < to.len ? from.len : to.len;
+
+    mut depth = 0;
+
+    mut start = 0;
+    for (mut i = 0; i < min; i++) {
+        let a = from[i];
+        let b = to[i];
+
+        if (b != a)
+            break;
+
+        if (b == '/')
+        {
+            start = i + 1;
+            depth++;
+        }
+    }
+
+    {
+        shadow mut start = start;
+        shadow mut depth = 0;
+
+        :OUTER
+        for (mut i = start; i < from.len; i++)
+        {
+            if (from[i] == '/') for (;;)
+            {
+                mut next = 0;
+                for (shadow mut i = i + 1; i < from.len; i++)
+                {
+                    if (from[i] == '/')
+                    {
+                        next = i;
+                        break;
+                    }
+                }
+
+                leave(name?: from[start .. i], path?: from[.. i + 1], ?:depth, last?: !next);
+
+                start = i + 1;
+                depth++;
+
+                if !((i = next))
+                    break :OUTER;
+            }
+        }
+    }
+
+    :OUTER
+    for (mut i = start; i < to.len; i++)
+    {
+        if (to[i] == '/') for (;;)
+        {
+            mut next = 0;
+            for (shadow mut i = i + 1; i < to.len; i++)
+            {
+                if (to[i] == '/')
+                {
+                    next = i;
+                    break;
+                }
+            }
+
+            enter(name?: to[start .. i], path?: to[.. i + 1], ?:depth, last?: !next);
+
+            start = i + 1;
+            depth++;
+
+            if !((i = next))
+                break :OUTER;
+        }
+    }
+}
+
+fn update(ref frag: html::Fragment,
+    ref last_href!: string, mut href!?: string, current_href!?: string)
+{
+    mut first           = false;
+    mut last            = false;
+
+    if (!last_href)
+        last_href       = { first = true; "/" };
+    if (!href)
+        href            = { last = true; "/" };
+
+    mut depth_change    = false;
+    mut added_separator = false;
+
+    fn considerSeparator()
+    {
+        if (depth_change && !added_separator && !first)
+        {
+            added_separator = true;
+            frag.raw ~= "<div class='nav-sep'></div>\n";
+        }
+    }
+
+    path_travel(from: last_href, to: href,
+
+        leave: ||
+        {
+            // Close tree branch, we're going one level up.
+            frag.raw ~= "</div></div>\n";
+        },
+
+        enter: |name, path, depth, shadow last|
+        {
+            if (!last)
+            {
+                frag.raw ~= "<div class='nav-group'>";
+                frag.raw ~= "<div>";
+            }
+            else
+            {
+                // Open tree branch, we're descending one level.
+                mut id: string;
+                markdown::idAppend(out: id, path);
+
+                // The checkbox CSS hack for CSS-only interactivity,
+                //  the checkbox itself will be display: none.
+                //
+                mut here = current_href.starts(with: path) && " here";
+
+                frag.raw ~= "<input type='checkbox' class='nav-chkbx'";
+                frag.appendAttribute("id", id);
+                if (here) frag.raw ~= " checked";
+                frag.raw ~= " />\n";
+
+                here ~= " nav-" ~ depth;
+
+                // The outer div, just after the checkbox,
+                //  so it can be checkbox + div selected.
+                //
+                frag.raw ~= "<div";
+                frag.appendAttribute("class", "nav-tree" ~ here);
+                frag.raw ~= ">\n";
+
+                // Chechbox label, clicking this will toggle the checkbox,
+                //  which will hide and show the children subdiv below.
+                //
+                frag.raw ~= "<label";
+                frag.appendAttribute("class", "nav-label" ~ here);
+                frag.appendAttribute("for", id);
+                frag.raw ~= ">";
+                frag.escapeTextContent(intoTitle(name));
+                frag.appendSnippet("nav-chevron");
+                frag.raw ~= "</label>\n";
+
+                // Finally, the children subdiv that will be display: noned/blocked
+                //  depending on whether the checkbox is checked.
+                //
+                frag.raw ~= "<div class='nav-children'>";
+            }
+        });
+
+    last_href = href;
+
+    if (!last)
+        considerSeparator();
+}

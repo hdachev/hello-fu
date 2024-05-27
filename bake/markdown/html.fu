@@ -1,0 +1,210 @@
+import html::Fragment;
+import markdown;
+
+enum RenderMode {
+    HeaderAndBody   = 0
+    HeaderOnly
+    BodyOnly
+};
+
+fn render(doc: Document, mut mode?: RenderMode, anchors?: string)
+{
+    mut frag: Fragment;
+
+    mut indent = "\n";
+
+    fn visit(n: Node, mut first?: bool)
+    {
+        mut close: string;
+        let indent0 = indent.len;
+
+        let k = n.kind;
+
+        if (k.isBlock) :BRK_TO_SKIP_INDENT
+        {
+            frag.raw ~= indent;
+            close     = indent;
+
+            if (k == "Paragraph")
+            {
+                let tail = n.items.if_last;
+                if (tail.kind == "Plaintext" &&
+                    tail.handle && doc.plaintext[tail.handle.handleIntoIndex]
+                        .endsWithIncompleteSentence)
+                {
+                    frag.raw ~= "<p class='incomplete-sentence'>";
+                }
+                else
+                {
+                    frag.raw ~= "<p>";
+                }
+
+                close    ~= "</p>";
+            }
+            else if (k == "UnorderedList")
+            {
+                frag.raw ~= "<ul>";
+                close    ~= "</ul>";
+            }
+            else if (k == "OrderedList")
+            {
+                frag.raw ~= "<ol>";
+                close    ~= "</ol>";
+            }
+            else if (k == "ListItem")
+            {
+                frag.raw ~= "<li>";
+                close    ~= "</li>";
+            }
+            else if (k == "CodeBlock")
+            {
+                frag.appendCodeSnippet(doc, n, pre_wrap: true);
+
+                break :BRK_TO_SKIP_INDENT;
+            }
+            else if (k == "BlockQuote")
+            {
+                frag.raw ~= "<blockquote>";
+                close    ~= "</blockquote>";
+
+                break :BRK_TO_SKIP_INDENT;
+            }
+            else if (h := n.kind.headingLevel)
+            {
+                let tag   = "h" ~ h;
+                frag.raw ~= "<" ~ tag;
+
+                let ref   = n.handle && doc.toc[n.handle.handleIntoIndex].link;
+                let id    = ref.href.starts(with: '#') && ref.href;
+                if (id)
+                    frag.appendAttribute("id", ref.href[1 ..]);
+
+                frag.raw ~= '>';
+
+                if (id && anchors)
+                {
+                    frag.raw ~= "<a";
+                    frag.appendAttribute("href",  id);
+                    frag.appendAttribute("class", anchors);
+                    frag.raw ~= '>';
+
+                    close    ~= "</a>";
+                }
+
+                close    ~= "</" ~ tag ~ ">";
+            }
+
+            if (k.isLeafBlock)
+                (frag.raw ~= indent) ~= "\t";
+            else
+                indent ~= "\t";
+
+            // Allow leading span to receive .first-node styling.
+            first = true;
+        }
+        else
+        {
+            if (k == "CodeSpan")
+            {
+                frag.appendCodeSnippet(doc, n, :first);
+            }
+            else if (k == "Em1")
+            {
+                frag.raw ~= "<em>";
+                close     = "</em>";
+            }
+            else if (k == "Em2")
+            {
+                frag.raw ~= "<strong>";
+                close     = "</strong>";
+            }
+            else if (k == "Em3")
+            {
+                frag.raw ~= "<strong><em>";
+                close     = "</em></strong>";
+            }
+            else if (k == "Link")
+            {
+                let ref = n.handle && doc.links[n.handle.handleIntoIndex];
+
+                frag.raw ~= "<a";
+                if (ref.href)  frag.appendAttribute("href",  ref.href);
+                if (ref.title) frag.appendAttribute("title", ref.title);
+                frag.raw ~= ">";
+
+                close     = "</a>";
+            }
+            else if (k == "Plaintext")
+            {
+                frag.escapeTextContent(
+                    n.handle && doc.plaintext[n.handle.handleIntoIndex]);
+            }
+        }
+
+        //
+        for (mut i = 0; i < n.items.len; i++)
+            visit(n.items[i], first: first && !i);
+
+        frag.raw ~= close;
+
+        //
+        indent.shrink(indent0);
+    }
+
+    ref items   = doc.root_node.items;
+
+    let start   = mode == "BodyOnly" ? 1 : 0;
+    let end     = min(  items.len,
+                        mode == "HeaderOnly" ? 1 : int.MAX);
+
+    for (mut i = start; i < end; i++)
+        visit(items[i]);
+
+    if (frag.raw)
+        frag.raw ~= '\n';
+
+    return frag.raw;
+}
+
+fn appendCodeSnippet(
+    ref frag: /*TODO FAILCASE html::*/Fragment,
+    doc: Document, n: Node,
+    pre_wrap!?: bool, first!?: bool)
+{
+    let snippet = n.handle && doc.code_snippets[n.handle.handleIntoIndex];
+
+    if !(snippet.flags & "DoNotWrap")
+    {
+        if (pre_wrap) frag.raw ~= "<pre>";
+
+        mut classes: string;
+
+        snippet.annots.each: |c|
+            classes ~= c >= 'a' && c <= 'z'
+                    || c >= 'A' && c <= 'Z'
+                    || c == '-'             ? c : ' ';
+
+        frag.raw ~= "<code";
+        frag.class(classes, first && "first-node");
+        frag.raw ~= ">";
+    }
+
+    if (snippet.flags & "DoNotEscape")
+        frag.raw ~= snippet.code;
+    else
+        frag.escapeTextContent(snippet.code);
+
+    if !(snippet.flags & "DoNotWrap")
+    {
+        frag.raw ~= "</code>";
+        if (pre_wrap) frag.raw ~= "</pre>";
+    }
+}
+
+fn endsWithIncompleteSentence(str: string)
+{
+    return str.ends(with: ':')
+        || str.ends(with: '-')
+        || str.ends(with: "..")
+        || str.ends(with: ';');
+}

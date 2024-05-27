@@ -1,0 +1,99 @@
+
+enum Color: u8 {
+    None                    = 0
+    Declaration
+    ControlFlow
+    Comment
+    StringLiteral
+    PrimitiveLiteral
+    MajorConstant
+    MinorConstant
+    MajorVariable
+    MinorVariable
+    PureFn
+    ImpureFn
+    Type
+    Label
+};
+
+let Cruft       = Color.None;
+let Builtin     = Color.None;
+
+flags Style: u8 {
+
+    // We'll keep enough room around for 16 colors,
+    //  8 reserved + 8 identifier colors (we could dim those or smth).
+    //
+    ColorBit0
+    ColorBit1
+    ColorBit2
+    ColorBit3
+
+    ColorBit4
+    // ...
+    WrittenTo
+    NonTrivialCopy
+};
+
+let Style_ColorBits     = Style(0x1f);
+let Style_ModifierBits  = Style(0xe0);
+
+fn applySyntaxHighlighting(
+    ref frag:       html::Fragment,
+        src:        byte[],
+        highlight:  Style[],
+        fail)
+{
+    shadow let fail = |reason: string|
+        fail("applySyntaxHighlighting: " ~ reason);
+
+    if (highlight.len != src.len)
+        return fail("highlight.len(" ~ highlight.len ~ ") src.len(" ~ src.len ~ ")");
+
+    mut start       = 0;
+    mut style0      = Style();
+
+    for (mut i = 0; i <= highlight.len; i++)
+    {
+        let done    = i == highlight.len;
+
+        let style1  = !done && highlight[i];
+        if (style1 != style0 || done)
+        {
+            if (i > start)
+            {
+                mut close: string;
+                if (style0)
+                {
+                    let color   = int(style0 & Style_ColorBits);
+
+                    frag.raw   ~= "<s class='";
+                    {
+                        let f = color.u8.Color.int;
+                        if (f > 0 && f < 16)
+                        {
+                            if (f < 8)
+                                frag.raw ~= "c" ~ f;
+                            else
+                                frag.raw ~= "C" ~ (f - 8);
+                        }
+                    }
+
+                    if (style0 & "WrittenTo")
+                        frag.raw ~= " s-W";
+                    if (style0 & "NonTrivialCopy")
+                        frag.raw ~= " s-C";
+
+                    frag.raw   ~= "'>";
+                    close       = "</s>";
+                }
+
+                frag.escapeTextContent(src[start .. i]);
+                frag.raw ~= close;
+            }
+
+            style0  = style1;
+            start   = i;
+        }
+    }
+}

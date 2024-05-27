@@ -1,0 +1,87 @@
+
+fn check(html: string): string
+{
+    mut diagnostics: string;
+
+    fn extractLine(pos: int)
+    {
+        mut line_start  = 0;
+        mut line_end    = html.len;
+
+        :OUTER
+        for (mut i = 0; i < html.len; i++) {
+            if (html[i] == '\n') {
+                if (i < pos) {
+                    line_start = i + 1;
+                }
+                else for (; i < html.len; i++) if (html[i] == '\n') {
+                    line_end = i;
+                    break :OUTER;
+                }
+            }
+        }
+
+        return html[line_start .. line_end];
+    }
+
+    fn complain(pos: int, reason: string)
+    {
+        diagnostics ~= "#" ~ pos ~ ": " ~ reason ~ ":\n" ~ extractLine(:pos) ~ "\n\n\t";
+    }
+
+
+    // Unexpanded markdown links.
+
+    if ((pos := html.find("](")) >= 0)
+    {
+        complain(:pos, "Unexpanded markdown link");
+    }
+
+
+    // Cross-check syntax highlighting.
+
+    fn match(haystack: string, prefix!: string, suffix!: string, yield)
+    {
+        mut start = 0;
+
+        for (;;)
+        {
+            let p_idx = haystack.find(prefix, :start);
+            if (p_idx < 0)
+                return;
+
+            start = p_idx + prefix.len;
+
+            let s_idx = haystack.find(suffix, :start);
+            if (s_idx < 0)
+                return;
+
+            yield(haystack[start .. s_idx], ?:start);
+
+            start = s_idx + suffix.len;
+        }
+    }
+
+    :OUTER
+    html.match(prefix: "<code>", suffix: "</code>"): |snippet, start!pos|
+    {
+        snippet.each: |c|
+            if !(c >= 'a' && c <= 'z' ||
+                 c >= 'A' && c <= 'Z' ||
+                 c >= '0' && c <= '9')
+                    continue :OUTER;
+
+        complain(:pos, "Uncolored alphanumeric snippet");
+    }
+
+    html.match(prefix: "<span class='C3'>", suffix: "</span>"): |snippet, start!pos|
+    {
+        if (snippet == "|")
+            complain(:pos, "C3-colored pipe, looks like a mispainted lambda");
+    }
+
+
+    //
+
+    return diagnostics;
+}
