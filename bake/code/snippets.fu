@@ -32,13 +32,16 @@ pub nothrow fn preprocess(ref doc: markdown::Document)
     mut must_process: bool[];
     must_process.resize(doc.code_snippets.len);
 
-    doc.code_snippets.each: |snip, i|
+    doc.code_snippets.each: |ref snip, i|
     {
         if (snip.flags & "CodeSpan")
             continue;
 
         if (snip.annots == "sh" || snip.annots == "output")
             continue;
+
+        if (!snip.annots.has(":keep-semis"))
+            CodeStyle_removeRedundantSemicolons(snip.code);
 
         must_process[i] = true;
     };
@@ -370,4 +373,98 @@ fn find_wholeIdentifier(haystack: byte[], needle: byte[], mut start = 0)
     }
 
     return -1;
+}
+
+
+//
+
+fn CodeStyle_removeRedundantSemicolons(ref code: string)
+{
+    :NEXT_SEMI
+    for (mut i = 0; i < code.len; i++)
+    {
+        if (code[i] != ';')
+            continue :NEXT_SEMI;
+
+        mut replace_with_space_to_preserve_alignment = false;
+
+        // Drop line-ending semis only -
+        mut next = code.if(exists: i + 1, else: '\n');
+        if (next != '\n')
+        {
+            mut j = i + 1;
+
+            // Unfortunately, there may be a trailing comment.
+            while (next == ' ')
+                next = code.if(exists: ++j, else: '\n');
+
+            let rest = code[j ..];
+            if (rest.starts(with: "//") || rest.starts(with: "/*"))
+            {
+                // Ok the rest of the line is a comment, we can drop the semi.
+                replace_with_space_to_preserve_alignment = true;
+            }
+            else
+            {
+                continue :NEXT_SEMI;
+            }
+        }
+        else
+        {
+            // Currently we don't insert semis before tokens
+            //  that could continue the expression.
+            for (mut j = i + 2; j < code.len; j++)
+            {
+                let c = code[j];
+                if (c == ' ' || c == '\n')
+                    continue;
+
+                if (c == '-' || c == '+' || c == '[' || c == '(')
+                    continue :NEXT_SEMI;
+
+                break;
+            }
+        }
+
+        // We won't be doing it if the semi follows
+        //  a naked break/continue/return, won't parse well.
+        mut id_prefix_start = i;
+        while (id_prefix_start)
+        {
+            let c = code[id_prefix_start - 1];
+            if (c >= 'a' && c <= 'z' ||
+                c >= 'A' && c <= 'Z' ||
+                c == '_')
+            {
+                id_prefix_start--;
+                continue;
+            }
+
+            break;
+        }
+
+        let id_prefix = code[id_prefix_start .. i];
+        if (id_prefix)
+        {
+            if (id_prefix == "break" ||
+                id_prefix == "continue" ||
+                id_prefix == "return" ||
+                id_prefix_start && code[id_prefix_start - 1] == ':')
+            {
+                // TODO unless there's a closing curly after it.
+                continue :NEXT_SEMI;
+            }
+        }
+
+        // Drop the semicolon.
+        if (replace_with_space_to_preserve_alignment)
+        {
+            code[i] = ' ';
+        }
+        else
+        {
+            code.splice(i, 1);
+            i--;
+        }
+    }
 }

@@ -88,7 +88,7 @@ fn traverseRawTokens(
 
                 tokens.if(exists: i + 1): |next|
                 {
-                    if (next.kind == "id")
+                    if (next.kind == "id" && next.col > t.col)
                     {
                         applyColor(i, "Declaration");
                     }
