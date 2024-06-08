@@ -27,6 +27,23 @@ pub nothrow fn preprocess(ref doc: markdown::Document)
     mut prepass: PartsAndHighlight[];
 
 
+    //
+
+    mut must_process: bool[];
+    must_process.resize(doc.code_snippets.len);
+
+    doc.code_snippets.each: |snip, i|
+    {
+        if (snip.flags & "CodeSpan")
+            continue;
+
+        if (snip.annots == "sh" || snip.annots == "output")
+            continue;
+
+        must_process[i] = true;
+    };
+
+
     // Prepase code blocks: Hat, head, foot, shoe.
 
     {
@@ -36,9 +53,9 @@ pub nothrow fn preprocess(ref doc: markdown::Document)
         fn hasAnnot(snip: markdown::CodeSnippet, annot: string)
             snip.annots.find_wholeIdentifier(annot) >= 0;
 
-        prepass = doc.code_snippets.map(|ref snip|
+        prepass = doc.code_snippets.map(|ref snip, i|
         {
-            if (snip.flags & "CodeSpan")
+            if !(must_process[i])
                 continue [];
 
             // `standalone` snippet annotation -
@@ -55,7 +72,7 @@ pub nothrow fn preprocess(ref doc: markdown::Document)
             state.grow(SHOE + 1);
 
             // Don't show headers or footers more than once.
-            state.each: |ref part, i|
+            state.each: |ref part, shadow i|
                 if (i != BODY && !part.show && part.code)
                     part.hide = true;
 
@@ -155,44 +172,37 @@ pub nothrow fn preprocess(ref doc: markdown::Document)
 
     // Compile & highlight all code blocks.
 
-    doc.code_snippets.par::zip(prepass): |ref snip, shadow ref prepass|
+    doc.code_snippets.par::zip(prepass): |ref snip, shadow ref prepass, i|
     {
-        if (snip.flags & "CodeSpan")
+        if !(must_process[i])
             continue;
 
-        //
-        fn fail(reason: string)
-        {
+        fn fail(reason: string) {
             snip.code = "ERROR(highlight): " ~ reason;
             continue;
         }
 
-        ref highlight = prepass.highlight;
-
+        ref highlight   = prepass.highlight;
         let expect_exit = snip.annots.has("exit 1") && 1;
 
-        if (snip.annots != "sh" &&
-            snip.annots != "output")
-        {
-            mut joint = "";
-            prepass.parts.each: |part|
-                joint ~= part.code;
+        mut joint = "";
+        prepass.parts.each: |part|
+            joint ~= part.code;
 
-            implicit mut testdiffs: fu::src::testdiff::TestDiffs;
+        implicit mut testdiffs: fu::src::testdiff::TestDiffs;
 
-            try {
-                let ctx     = fu::src::test_utils::ZERO([ joint ],
-                    options:  fu::src::options::Options(dev: "DEV_IgnoreDefects"),
-                    :expect_exit);
+        try {
+            let ctx     = fu::src::test_utils::ZERO([ joint ],
+                options:  fu::src::options::Options(dev: "DEV_IgnoreDefects"),
+                :expect_exit);
 
-                highlight   = highlight::getSyntaxHighlighting(:ctx, :fn fail);
-            }
-            catch (e) {
-                fail(e.fu::src::test_utils::ERR_STRIP_ANSI);
-            }
-
-            swap(snip.code, joint);
+            highlight   = highlight::getSyntaxHighlighting(:ctx, :fn fail);
         }
+        catch (e) {
+            fail(e.fu::src::test_utils::ERR_STRIP_ANSI);
+        }
+
+        swap(snip.code, joint);
     };
 
 
@@ -221,7 +231,7 @@ pub nothrow fn preprocess(ref doc: markdown::Document)
                     i_block         = i_span - i_block;
 
                 let block           = doc.code_snippets[i_block];
-                if (block.flags & "CodeSpan")
+                if !(must_process[i_block])
                     continue;
 
                 let block_highlight = prepass[i_block].highlight;
