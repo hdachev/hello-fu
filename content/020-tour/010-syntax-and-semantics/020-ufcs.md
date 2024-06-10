@@ -70,7 +70,7 @@ Note how:
 
 Arguments may have default values, which are used when an argument is left unspecified:
 
-```standalone
+```:standalone
 fn main() {
 //: hide hat
     fn approx_ellipse_perimeter(a: f32, b = a)
@@ -87,7 +87,7 @@ Note that argument default expressions can access anything in [lexical scope](le
 
 A shorthand is available for zero-filled defaults, here `reverse?: bool` defaults to `false`:
 
-```standalone
+```:standalone
 fn each(ref array: _[], fn, reverse?: bool)
     for (mut i = 0; i < array.len; i++) {
         shadow let i = reverse
@@ -114,7 +114,7 @@ When thinking about optional arguments, we usually envision a function that does
 
 Note how the example above uses `?:i` to pass the array index into the iterator block - this allows us to provide it with a block that doesn't have an `i` argument:
 
-```standalone
+```:standalone
 fn main() {
     fn each(ref array: _[], fn, reverse?: bool)
         for (mut i = 0; i < array.len; i++) {

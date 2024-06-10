@@ -314,6 +314,7 @@ fn home_demo_render(docs: Document[])
         let maxLinesShown   = 20;
         let maxLinesHidden  = 25;
 
+        mut bestOnly        = false;
         mut bestDiffLines   = int.MAX;
         mut bestSnippet     = "";
 
@@ -325,6 +326,9 @@ fn home_demo_render(docs: Document[])
 
                 mut minLines = minLinesShown;
                 mut maxLines = maxLinesShown;
+
+                if (snip.annots.has(":worst"))
+                    continue;
 
                 // Clear hidden snippets.
                 if (attempt == 0)
@@ -366,19 +370,92 @@ fn home_demo_render(docs: Document[])
                 }
 
                 //
-                if (snip.annots.has("best"))
-                {
-                    bestSnippet = code;
-                    break;
-                }
+                mut numLines    = code.split('\n').len;
 
-                //
-                let numLines    = code.split('\n').len;
-                let diffLines   = abs(numLines - idealLines);
+                if (numLines > maxLines)
+                {
+                    mut numCommentsRemoved      = 0;
+                    mut numEmptyLinesRemoved    = 0;
+
+                    // Snippet too long for the demo-mode carousel?
+                    //  Try removing comments.
+                    :NEXT_COMMENT
+                    for (;;) {
+                        mut i0 = code.find("<s class='c3'>");
+                        if (i0 >= 0) {
+                            let i1 = code.find("</s>\n", start: i0);
+                            if (i1 > i0) {
+
+                                // We want to trim whole comment lines only.
+                                while (i0) {
+                                    let c = code[--i0];
+                                    if (c != ' ') {
+                                        if (c != '\n')
+                                            break;
+
+                                        code[i0 .. i1 + 4] = "";
+                                        numCommentsRemoved++;
+                                        continue :NEXT_COMMENT;
+                                    }
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+
+                    // Removing comments can result in extraneous whitespace,
+                    //  collapse double newlines between pairs of
+                    //   double-newline separated single lines of code.
+                    if (numCommentsRemoved)
+                    {
+                        mut lines = code.split('\n');
+
+                        mut collapse: bool[];
+                        collapse.resize(lines.len);
+
+                        for (mut i = 3; i < lines.len; i++)
+                        {
+                            if ((i - 4 < 0 || !lines[i - 4]) &&
+                                !lines[i - 2] &&
+                                !lines[i])
+                            {
+                                numEmptyLinesRemoved++;
+                                collapse[i - 2] = true;
+                            }
+                        }
+
+                        for (mut i = lines.len; i --> 0; )
+                            if (collapse[i])
+                                lines.splice(i, 1);
+
+                        if (numEmptyLinesRemoved)
+                            code = lines.join("\n");
+                    }
+
+                    numLines = numLines - numCommentsRemoved - numEmptyLinesRemoved;
+                }
 
                 if (numLines < minLines || numLines > maxLines)
                     continue;
 
+                let diffLines   = abs(numLines - idealLines);
+
+                //
+                if (snip.annots.has(":best"))
+                {
+                    if (!bestOnly)
+                    {
+                        bestOnly        = true;
+                        bestDiffLines   = int.MAX;
+                    }
+                }
+                else if (bestOnly)
+                {
+                    continue;
+                }
+
+                //
                 if (bestDiffLines   > diffLines)
                 {
                     bestDiffLines   = diffLines;

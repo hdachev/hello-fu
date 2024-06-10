@@ -47,7 +47,7 @@ fn count(node: Node) {
 
 Lexical scoping can unite various language constructs into unique and interesting combinations, for example:
 
-```standalone
+```:standalone,:best
 fn reduce(array: <T>[], reducer, mut init!state?: T) {
     for (mut i = array.len; i --> 0; )
         state = reducer(array[i], state);
