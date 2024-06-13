@@ -91,13 +91,13 @@
 	<code class="first-node"><s class='c1'>struct</s></code> declarations work similarly to those in all C-style languages.
 </p>
 <pre><code><s class='c1'>struct</s> <s class='C4'>Person</s> {
-    name:       <s class='C4'>string</s>;
-    age:        <s class='C4'>int</s>;
+    name:       <s class='C4'>string</s>
+    age:        <s class='C4'>int</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>let</s> <s class='c7'>p</s> = <s class='C4'>Person</s>(<s class='c4'>"Albert"</s>, <s class='c5'>26</s>);
-    <s class='c2'>return</s> <s class='c7'>p</s>.<s class='c7'>name</s>.len + <s class='c7'>p</s>.<s class='c7'>age</s> - <s class='c5'>32</s>;
+    <s class='c1'>let</s> <s class='c7'>p</s> = <s class='C4'>Person</s>(<s class='c4'>"Albert"</s>, <s class='c5'>26</s>)
+    <s class='c2'>return</s> <s class='c7'>p</s>.<s class='c7'>name</s>.len + <s class='c7'>p</s>.<s class='c7'>age</s> - <s class='c5'>32</s>
 }
 </span></span></code></pre>
 
@@ -111,21 +111,21 @@
 	In a language like JavaScript, one can iterate over the fields of pretty much any object, which enables a very simple, very expressive form of metaprogramming. We couldn't resist.
 </p>
 <pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>Person</s> {
-    name:       <s class='C4'>string</s>;
-    age:        <s class='C4'>int</s>;
+    name:       <s class='C4'>string</s>
+    age:        <s class='C4'>int</s>
 }
 
 </span></span><s class='c1'>fn</s> <s class='C3'>pretty_print</s>(<s class='c6'>value</s>: <s class='C4'>Person</s>) {
-    println(<s class='c4'>"Person {"</s>);
+    println(<s class='c4'>"Person {"</s>)
     <s class='c2'>for</s> (<s class='c1'>fieldname</s> i: <s class='C4'>Person</s>)
-        println(<s class='c4'>"    "</s> ~ <s class='c4'>"i"</s> ~ <s class='c4'>": "</s> <s class='c6'>value</s>.<s class='c6'>i</s>);
+        println(<s class='c4'>"    "</s> ~ <s class='c4'>"i"</s> ~ <s class='c4'>": "</s> <s class='c6'>value</s>.<s class='c6'>i</s>)
 
-    println(<s class='c4'>"}"</s>);
+    println(<s class='c4'>"}"</s>)
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>let</s> <s class='c7'>p</s> = <s class='C4'>Person</s>(<s class='c4'>"Albert"</s>, <s class='c5'>26</s>);
-    <s class='c2'>return</s> <s class='c7'>p</s>.<s class='c7'>name</s>.len + <s class='c7'>p</s>.<s class='c7'>age</s> - <s class='c5'>32</s>;
+    <s class='c1'>let</s> <s class='c7'>p</s> = <s class='C4'>Person</s>(<s class='c4'>"Albert"</s>, <s class='c5'>26</s>)
+    <s class='c2'>return</s> <s class='c7'>p</s>.<s class='c7'>name</s>.len + <s class='c7'>p</s>.<s class='c7'>age</s> - <s class='c5'>32</s>
 }
 </span></span></code></pre>
 
@@ -147,21 +147,21 @@
 	Also note that we're iterating a type, not any value in particular. This is quite expressive:
 </p>
 <pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>Person</s> {
-    name:       <s class='C4'>string</s>;
-    age:        <s class='C4'>int</s>;
+    name:       <s class='C4'>string</s>
+    age:        <s class='C4'>int</s>
 }
 
 </span></span><s class='c1'>fn</s> <s class='C2'>maybe_the_same_person</s>(<s class='c7'>a</s>: <s class='C4'>Person</s>, <s class='c7'>b</s>: <s class='C4'>Person</s>) {
     <s class='c2'>for</s> (<s class='c1'>fieldname</s> field: <s class='C4'>Person</s>)
         <s class='c2'>if</s> (<s class='c7'>a</s>.<s class='c7'>field</s> != <s class='c7'>b</s>.<s class='c7'>field</s>)
-            <s class='c2'>return</s> <s class='c5'>false</s>;
+            <s class='c2'>return</s> <s class='c5'>false</s>
 
-    <s class='c2'>return</s> <s class='c5'>true</s>;
+    <s class='c2'>return</s> <s class='c5'>true</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>let</s> <s class='c7'>p</s> = <s class='C4'>Person</s>(<s class='c4'>"Albert"</s>, <s class='c5'>26</s>);
-    <s class='c2'>return</s> <s class='c7'>p</s>.<s class='c7'>name</s>.len + <s class='c7'>p</s>.<s class='c7'>age</s> - <s class='c5'>32</s>;
+    <s class='c1'>let</s> <s class='c7'>p</s> = <s class='C4'>Person</s>(<s class='c4'>"Albert"</s>, <s class='c5'>26</s>)
+    <s class='c2'>return</s> <s class='c7'>p</s>.<s class='c7'>name</s>.len + <s class='c7'>p</s>.<s class='c7'>age</s> - <s class='c5'>32</s>
 }
 </span></span></code></pre>
 
@@ -178,26 +178,26 @@
 	A value of a <code><s class='c1'>struct</s></code> type is considered <a href="/tour/control-flow/short-circuit#truthy-and-falsy-values">truthy</a> if any of its <code><s class='c5'>true</s></code> fields is truthy:
 </p>
 <pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>Person</s> {
-    name:       <s class='C4'>string</s>;
-    age:        <s class='C4'>int</s>;
+    name:       <s class='C4'>string</s>
+    age:        <s class='C4'>int</s>
 }
 
 </span></span><s class='c1'>struct</s> <s class='C4'>Container</s> {
-    <s class='c5'>true</s> size:  <s class='C4'>int</s>;
-    raw_data:   <s class='C4'>int</s>[];
+    <s class='c5'>true</s> size:  <s class='C4'>int</s>
+    raw_data:   <s class='C4'>int</s>[]
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>c</s> = <s class='C4'>Container</s>();
-    assert(!!<s class='C1'>c</s> == <s class='c5'>false</s>);
+    <s class='c1'>mut</s> <s class='C1'>c</s> = <s class='C4'>Container</s>()
+    assert(!!<s class='C1'>c</s> == <s class='c5'>false</s>)
 
-    <s class='C1'>c</s>.<s class='C1'>raw_data</s> ~= [ <s class='c5'>1</s>, <s class='c5'>2</s>, <s class='c5'>3</s> ];
-    assert(!!<s class='C1'>c</s> == <s class='c5'>false</s>);
+    <s class='C1'>c</s>.<s class='C1'>raw_data</s> ~= [ <s class='c5'>1</s>, <s class='c5'>2</s>, <s class='c5'>3</s> ]
+    assert(!!<s class='C1'>c</s> == <s class='c5'>false</s>)
 
-    <s class='C1'>c</s>.<s class='C1'>size</s> = <s class='c5'>3</s>;
-    assert(!!<s class='C1'>c</s> == <s class='c5'>true</s>);
+    <s class='C1'>c</s>.<s class='C1'>size</s> = <s class='c5'>3</s>
+    assert(!!<s class='C1'>c</s> == <s class='c5'>true</s>)
 
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 

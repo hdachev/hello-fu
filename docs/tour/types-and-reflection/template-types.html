@@ -93,23 +93,23 @@
 	Template <code><s class='c1'>struct</s></code> Declarations
 </a></h3>
 <pre><code><s class='C2'>struct</s> <s class='C4'>Pair</s>(<s class='c1'>type</s> <s class='C4'>Left</s>, <s class='c1'>type</s> <s class='C4'>Right</s>) {
-    left:   <s class='C4'>Left</s>;
-    right:  <s class='C4'>Right</s>;
+    left:   <s class='C4'>Left</s>
+    right:  <s class='C4'>Right</s>
 }
 
 <s class='c1'>fn</s> <s class='C2'>fst</s>(<s class='c6'>pair</s>: <s class='C4'>Pair</s>(&lt;<s class='C4'>Left</s>>, _)): <s class='C4'>Left</s> =
-    <s class='c6'>pair</s>.<s class='c6'>left</s>;
+    <s class='c6'>pair</s>.<s class='c6'>left</s>
 
 <s class='c1'>fn</s> <s class='C2'>snd</s>(<s class='c6'>pair</s>: <s class='C4'>Pair</s>(_, &lt;<s class='C4'>Right</s>>)): <s class='C4'>Right</s> =
-    <s class='c6'>pair</s>.<s class='c6'>right</s>;
+    <s class='c6'>pair</s>.<s class='c6'>right</s>
 
 <s class='c1'>fn</s> <s class='C2'>sum</s>(<s class='c6'>pair</s>: <s class='C4'>Pair</s>(&lt;T>, T))
     <s class='c2'>case</s> (T.is::arithmetic): T =
-        <s class='c6'>pair</s>.<s class='C2'>fst</s> + <s class='c6'>pair</s>.<s class='C2'>snd</s>;
+        <s class='c6'>pair</s>.<s class='C2'>fst</s> + <s class='c6'>pair</s>.<s class='C2'>snd</s>
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>let</s> <s class='c7'>p</s> = <s class='C4'>Pair</s>(<s class='C4'>int</s>, <s class='C4'>int</s>)(<s class='c5'>2</s>, <s class='c5'>3</s>);
-    <s class='c2'>return</s> <s class='c7'>p</s>.<s class='C2'>sum</s> - <s class='c5'>5</s>;
+    <s class='c1'>let</s> <s class='c7'>p</s> = <s class='C4'>Pair</s>(<s class='C4'>int</s>, <s class='C4'>int</s>)(<s class='c5'>2</s>, <s class='c5'>3</s>)
+    <s class='c2'>return</s> <s class='c7'>p</s>.<s class='C2'>sum</s> - <s class='c5'>5</s>
 }
 </span></span></code></pre>
 

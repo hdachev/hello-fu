@@ -98,19 +98,19 @@
 <p class='incomplete-sentence'>
 	Let's begin with this snippet:
 </p>
-<pre><code><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> };
-<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> };
+<pre><code><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> }
+<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> }
 
 <s class='c1'>fn</s> <s class='C3'>move</s>(<s class='c1'>ref</s> <s class='C0'>player</s>: <s class='C4'>Player</s>, <s class='c6'>dist</s>: <s class='C4'>vec2</s>) {
-    <s class='C0'>player</s>.<s class='C0'>position</s>.<s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>;
-    <s class='C0'>player</s>.<s class='C0'>position</s>.<s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>;
+    <s class='C0'>player</s>.<s class='C0'>position</s>.<s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>
+    <s class='C0'>player</s>.<s class='C0'>position</s>.<s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>;
-    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>));
-    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>
+    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>))
+    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -120,19 +120,19 @@
 <p class='incomplete-sentence'>
 	In a language like C++, if <code><s class='C3'>move</s></code> were a method of <code><s class='C4'>Player</s></code>, one would be able to abbreviate the repetitous <code>player.position.*</code>  to just <code>position.*</code>. We can achieve the same by <code><s class='c1'>using</s></code> the <code><s class='C0'>player</s></code> argument to <code><s class='C3'>move</s></code>:
 </p>
-<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> };
-<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> };
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> }
+<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> }
 
 </span></span><s class='c1'>fn</s> <s class='C3'>move</s>(<s class='c1'>using</s> <s class='c1'>ref</s> <s class='C0'>player</s>: <s class='C4'>Player</s>, <s class='c6'>dist</s>: <s class='C4'>vec2</s>) {
-    <s class='C0'>position</s>.<s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>;
-    <s class='C0'>position</s>.<s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>;
+    <s class='C0'>position</s>.<s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>
+    <s class='C0'>position</s>.<s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>;
-    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>));
-    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>
+    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>))
+    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -151,20 +151,20 @@
 <p class='incomplete-sentence'>
 	<code class="first-node"><s class='c1'>using</s></code> works with any variable declaration, not just function arguments:
 </p>
-<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> };
-<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> };
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> }
+<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> }
 
 </span></span><s class='c1'>fn</s> <s class='C3'>move</s>(<s class='c1'>ref</s> <s class='C0'>player</s>: <s class='C4'>Player</s>, <s class='c6'>dist</s>: <s class='C4'>vec2</s>) {
-    <s class='c1'>using</s> <s class='c1'>ref</s> <s class='C0'>pos</s> = <s class='C0'>player</s>.<s class='C0'>position</s>;
-    <s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>;
-    <s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>;
+    <s class='c1'>using</s> <s class='c1'>ref</s> <s class='C0'>pos</s> = <s class='C0'>player</s>.<s class='C0'>position</s>
+    <s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>
+    <s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>;
-    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>));
-    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>
+    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>))
+    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -174,20 +174,20 @@
 <p class='incomplete-sentence'>
 	Since the new <code><s class='C0'>pos</s></code> local is never used by name, we can make it anonymous:
 </p>
-<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> };
-<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> };
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> }
+<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> }
 
 </span></span><s class='c1'>fn</s> <s class='C3'>move</s>(<s class='c1'>ref</s> <s class='C0'>player</s>: <s class='C4'>Player</s>, <s class='c6'>dist</s>: <s class='C4'>vec2</s>) {
-    <s class='c1'>using</s> <s class='c1'>ref</s> <s class='C0'>_</s> = <s class='C0'>player</s>.<s class='C0'>position</s>;
-    <s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>;
-    <s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>;
+    <s class='c1'>using</s> <s class='c1'>ref</s> <s class='C0'>_</s> = <s class='C0'>player</s>.<s class='C0'>position</s>
+    <s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>
+    <s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>;
-    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>));
-    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>
+    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>))
+    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -197,20 +197,20 @@
 <p class='incomplete-sentence'>
 	... or skip the variable declaration altogether:
 </p>
-<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> };
-<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> };
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> }
+<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> }
 
 </span></span><s class='c1'>fn</s> <s class='C3'>move</s>(<s class='c1'>ref</s> <s class='C0'>player</s>: <s class='C4'>Player</s>, <s class='c6'>dist</s>: <s class='C4'>vec2</s>) {
-    <s class='C0'>using</s> <s class='C0'>player</s>.<s class='C0'>position</s>;
-    <s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>;
-    <s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>;
+    <s class='C0'>using</s> <s class='C0'>player</s>.<s class='C0'>position</s>
+    <s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>
+    <s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>;
-    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>));
-    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>
+    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>))
+    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -223,19 +223,19 @@
 <p>
 	In an object-oriented language, one might consider having <code><s class='C4'>Player</s></code> inherit from <code><s class='C4'>Position</s></code> to avoid having to type <code>*.position</code> repeatedly. We can cleanly achieve the same by <code><s class='c1'>using</s></code> the <code><s class='c6'>position</s></code> field in <code><s class='C4'>Player</s></code>.
 </p>
-<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> };
-</span></span><s class='c1'>struct</s> <s class='C4'>Player</s>   { <s class='c1'>using</s> <s class='c6'>position</s>: <s class='C4'>vec2</s> };
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> }
+</span></span><s class='c1'>struct</s> <s class='C4'>Player</s>   { <s class='c1'>using</s> <s class='c6'>position</s>: <s class='C4'>vec2</s> }
 
 <s class='c1'>fn</s> <s class='C3'>move</s>(<s class='c1'>using</s> <s class='c1'>ref</s> <s class='C0'>player</s>: <s class='C4'>Player</s>, <s class='c6'>dist</s>: <s class='C4'>vec2</s>) {
-    <s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>;
-    <s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>;
+    <s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>
+    <s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>;
-    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>));
-    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>
+    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>))
+    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -254,21 +254,21 @@
 <p class='incomplete-sentence'>
 	You can achieve the same by <code><s class='c1'>using</s></code> a function:
 </p>
-<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> };
-</span></span><s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> };
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> }
+</span></span><s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> }
 
-<s class='c1'>using</s> <s class='c1'>fn</s> <s class='C2'>getPlayerPosition</s>(<s class='c1'>ref</s> <s class='C1'>p</s>: <s class='C4'>Player</s>) <s class='C1'>p</s>.<s class='C1'>position</s>;
+<s class='c1'>using</s> <s class='c1'>fn</s> <s class='C2'>getPlayerPosition</s>(<s class='c1'>ref</s> <s class='C1'>p</s>: <s class='C4'>Player</s>) <s class='C1'>p</s>.<s class='C1'>position</s>
 
 <s class='c1'>fn</s> <s class='C3'>move</s>(<s class='c1'>ref</s> <s class='C0'>player</s>: <s class='C4'>Player</s>, <s class='c6'>dist</s>: <s class='C4'>vec2</s>) {
-    <s class='C0'>player</s>.<s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>;
-    <s class='C0'>player</s>.<s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>;
+    <s class='C0'>player</s>.<s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>
+    <s class='C0'>player</s>.<s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>;
-    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>));
-    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>
+    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>))
+    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -278,22 +278,22 @@
 <p class='incomplete-sentence'>
 	Note that although here it doesn't make much of a difference, you can introduce this conversion edge in any scope:
 </p>
-<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> };
-<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> };
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> }
+<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> }
 
 </span></span><s class='c1'>fn</s> <s class='C3'>move</s>(<s class='c1'>ref</s> <s class='C0'>player</s>: <s class='C4'>Player</s>, <s class='c6'>dist</s>: <s class='C4'>vec2</s>)
 {
-    <s class='c1'>using</s> <s class='c1'>fn</s> <s class='C2'>getPlayerPosition</s>(<s class='c1'>ref</s> <s class='C1'>p</s>: <s class='C4'>Player</s>) <s class='C1'>p</s>.<s class='C1'>position</s>;
+    <s class='c1'>using</s> <s class='c1'>fn</s> <s class='C2'>getPlayerPosition</s>(<s class='c1'>ref</s> <s class='C1'>p</s>: <s class='C4'>Player</s>) <s class='C1'>p</s>.<s class='C1'>position</s>
 
-    <s class='C0'>player</s>.<s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>;
-    <s class='C0'>player</s>.<s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>;
+    <s class='C0'>player</s>.<s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>
+    <s class='C0'>player</s>.<s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>;
-    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>));
-    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>
+    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>))
+    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -303,22 +303,22 @@
 <p class='incomplete-sentence'>
 	Finally, to come full circle, yet another way to achieve the same thing would be by <code><s class='c1'>using</s></code> a nullary function:
 </p>
-<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> };
-<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> };
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> }
+<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> }
 
 </span></span><s class='c1'>fn</s> <s class='C3'>move</s>(<s class='c1'>ref</s> <s class='C0'>player</s>: <s class='C4'>Player</s>, <s class='c6'>dist</s>: <s class='C4'>vec2</s>)
 {
-    <s class='c1'>using</s> <s class='c1'>fn</s> <s class='C2'>getPlayerPosition</s>() <s class='C0'>player</s>.<s class='C0'>position</s>;
+    <s class='c1'>using</s> <s class='c1'>fn</s> <s class='C2'>getPlayerPosition</s>() <s class='C0'>player</s>.<s class='C0'>position</s>
 
-    <s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>;
-    <s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>;
+    <s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>
+    <s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>;
-    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>));
-    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>
+    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>))
+    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 

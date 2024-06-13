@@ -95,13 +95,13 @@
 	<code class="first-node"><s class='c1'>primitive</s></code> Types
 </a></h3>
 <pre><code><s class='c1'>primitive</s> <s class='C4'>Distance</s>: <s class='C4'>f32</s> {
-    Meter       = <s class='c5'>1</s>;
-    Kilometer   = <s class='c5'>1000</s>;
-};
+    Meter       = <s class='c5'>1</s>
+    Kilometer   = <s class='c5'>1000</s>
+}
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    assert(<s class='c5'>1000</s> * <s class='C4'>Distance</s>.Meter == <s class='C4'>Distance</s>.Kilometer);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    assert(<s class='c5'>1000</s> * <s class='C4'>Distance</s>.Meter == <s class='C4'>Distance</s>.Kilometer)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -118,13 +118,13 @@
 	<code class="first-node"><s class='c1'>enum</s></code> Types
 </a></h3>
 <pre><code><s class='c1'>enum</s> <s class='C4'>MyScopedEnum</s>: <s class='C4'>u8</s> {
-    A = <s class='c5'>0</s>;
-    B;
+    A = <s class='c5'>0</s>
+    B
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    assert(<s class='C4'>MyScopedEnum</s>.B.u8 - <s class='C4'>MyScopedEnum</s>.A.u8 == <s class='c5'>1</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    assert(<s class='C4'>MyScopedEnum</s>.B.u8 - <s class='C4'>MyScopedEnum</s>.A.u8 == <s class='c5'>1</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -141,13 +141,13 @@
 	<code class="first-node"><s class='c1'>flags</s></code> Types
 </a></h3>
 <pre><code><s class='c1'>flags</s> <s class='C4'>MyFlags</s>: <s class='C4'>u16</s> {
-    FlagA;
-    FlagB;
-};
+    FlagA
+    FlagB
+}
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    assert(u16(<s class='C4'>MyFlags</s>.FlagA | <s class='C4'>MyFlags</s>.FlagB) == <s class='c5'>3</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    assert(u16(<s class='C4'>MyFlags</s>.FlagA | <s class='C4'>MyFlags</s>.FlagB) == <s class='c5'>3</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 

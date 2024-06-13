@@ -101,25 +101,25 @@
     <s class='c1'>implicit</s> <s class='c6'>lc</s>:                <s class='C4'>LineCol</s>,
     <s class='c1'>implicit</s> <s class='c1'>ref</s> <s class='C0'>diagnostics</s>:   <s class='C4'>Diagnostic</s>[])
 {
-    <s class='C0'>diagnostics</s> ~= <s class='C4'>Diagnostic</s>(:<s class='c6'>module</s>.<s class='c6'>filename</s>, :<s class='c6'>lc</s>, :<s class='c6'>error</s>);
+    <s class='C0'>diagnostics</s> ~= <s class='C4'>Diagnostic</s>(:<s class='c6'>module</s>.<s class='c6'>filename</s>, :<s class='c6'>lc</s>, :<s class='c6'>error</s>)
 }
 
 <s class='c1'>fn</s> <s class='C3'>parse_bool</s>(<s class='c6'>span</s>: <s class='C4'>byte</s>[]) {
     <s class='c2'>if</s> (<s class='c6'>span</s> == <s class='c4'>"true"</s>)
-        <s class='c2'>return</s> <s class='c5'>true</s>;
+        <s class='c2'>return</s> <s class='c5'>true</s>
 
     <s class='c2'>if</s> (<s class='c6'>span</s> != <s class='c4'>"false"</s>)
-        <s class='C3'>emit_diagnostic</s>(<s class='c4'>"Invalid bool literal: "</s> ~ <s class='c6'>span</s>);
+        <s class='C3'>emit_diagnostic</s>(<s class='c4'>"Invalid bool literal: "</s> ~ <s class='c6'>span</s>)
 
-    <s class='c2'>return</s> <s class='c5'>false</s>;
+    <s class='c2'>return</s> <s class='c5'>false</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>implicit</s> <s class='c1'>mut</s> <s class='c6'>module</s>:        <s class='C4'>Module</s>;
-    <s class='c1'>implicit</s> <s class='c1'>mut</s> <s class='c6'>lc</s>:            <s class='C4'>LineCol</s>;
-    <s class='c1'>implicit</s> <s class='c1'>mut</s> <s class='C0'>diagnostics</s>:   <s class='C4'>Diagnostic</s>[];
+    <s class='c1'>implicit</s> <s class='c1'>mut</s> <s class='c6'>module</s>:        <s class='C4'>Module</s>
+    <s class='c1'>implicit</s> <s class='c1'>mut</s> <s class='c6'>lc</s>:            <s class='C4'>LineCol</s>
+    <s class='c1'>implicit</s> <s class='c1'>mut</s> <s class='C0'>diagnostics</s>:   <s class='C4'>Diagnostic</s>[]
 
-    <s class='c2'>return</s> <s class='C3'>parse_bool</s>(<s class='c4'>"true"</s>) &amp;&amp; !<s class='C0'>diagnostics</s> ? <s class='c5'>0</s> : <s class='c5'>1</s>;
+    <s class='c2'>return</s> <s class='C3'>parse_bool</s>(<s class='c4'>"true"</s>) &amp;&amp; !<s class='C0'>diagnostics</s> ? <s class='c5'>0</s> : <s class='c5'>1</s>
 }
 </span></span></code></pre>
 

@@ -94,30 +94,30 @@
 	We have chosen the latter behaviour, because it is more expressive. Consider this program:
 </p>
 <pre><code class="exit  "><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C2'>trimmed</s>(<s class='c6'>str</s>: <s class='C4'>string</s>) {
-    <s class='c1'>mut</s> <s class='C0'>start</s> = <s class='c5'>0</s>;
+    <s class='c1'>mut</s> <s class='C0'>start</s> = <s class='c5'>0</s>
     <s class='c2'>for</s> (; <s class='C0'>start</s> &lt; <s class='c6'>str</s>.len; <s class='C0'>start</s>++)
         <s class='c2'>if</s> (<s class='c6'>str</s>[<s class='C0'>start</s>] > <s class='c5'>' '</s>)
             <s class='c2'>break</s>;
 
-    <s class='c1'>mut</s> <s class='C0'>end</s> = <s class='c6'>str</s>.len;
+    <s class='c1'>mut</s> <s class='C0'>end</s> = <s class='c6'>str</s>.len
     <s class='c2'>for</s> (; <s class='C0'>end</s> --> <s class='C0'>start</s>; )
         <s class='c2'>if</s> (<s class='c6'>str</s>[<s class='C0'>end</s>] > <s class='c5'>' '</s>)
             <s class='c2'>break</s>;
 
-    <s class='c2'>return</s> <s class='c6'>str</s>[<s class='C0'>start</s> .. <s class='C0'>end</s> + <s class='c5'>1</s>];
+    <s class='c2'>return</s> <s class='c6'>str</s>[<s class='C0'>start</s> .. <s class='C0'>end</s> + <s class='c5'>1</s>]
 }
 
 </span></span><s class='c1'>fn</s> <s class='C2'>if</s>(<s class='c6'>argv</s>: _[], <s class='c7'>exists</s>!i: <s class='C4'>int</s>)
-    <s class='c6'>argv</s>.len > <s class='c7'>i</s> &amp;&amp; <s class='c6'>argv</s>[<s class='c7'>i</s>];
+    <s class='c6'>argv</s>.len > <s class='c7'>i</s> &amp;&amp; <s class='c6'>argv</s>[<s class='c7'>i</s>]
 
 <s class='c1'>fn</s> <s class='C3'>main</s>(<s class='c6'>argv</s>: <s class='C4'>string</s>[]) {
     <s class='c1'>let</s> <s class='c6'>name</s> = <s class='c6'>argv</s>.<s class='C2'>if</s>(exists: <s class='c5'>1</s>).<s class='C2'>trimmed</s> || {
-        println(<s class='c4'>"Usage: greet [name]"</s>);
-        <s class='c2'>return</s> <s class='c5'>1</s>;
-    };
+        println(<s class='c4'>"Usage: greet [name]"</s>)
+        <s class='c2'>return</s> <s class='c5'>1</s>
+    }
 
-    println(<s class='c4'>"Hello, "</s> <s class='c6'>name</s> <s class='c4'>"!"</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    println(<s class='c4'>"Hello, "</s> <s class='c6'>name</s> <s class='c4'>"!"</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </code></pre>
 
@@ -166,7 +166,7 @@
     <s class='c5'>2</s>     &amp;&amp; <s class='c4'>"Dog"</s>          <s class='c3'>// is "Dog"</s>
     <s class='c4'>""</s>    &amp;&amp; <s class='c4'>"Dog"</s>          <s class='c3'>// is ""</s>
     <s class='c4'>"Cat"</s> &amp;&amp; <s class='c4'>"Dog"</s>          <s class='c3'>// is "Dog"</s>
-<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> <s class='c5'>0</s>;
+<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 

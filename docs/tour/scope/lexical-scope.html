@@ -93,24 +93,24 @@
 <p>
 	Parent function locals are always captured by reference, which is most similar to the behavior of closures in a language like JavaScript.
 </p>
-<pre><code><s class='c1'>struct</s> <s class='C4'>Node</s> { items: <s class='C4'>Node</s>[] };
+<pre><code><s class='c1'>struct</s> <s class='C4'>Node</s> { items: <s class='C4'>Node</s>[] }
 
 <s class='c1'>fn</s> <s class='C2'>count</s>(<s class='c6'>node</s>: <s class='C4'>Node</s>) {
-    <s class='c1'>mut</s> <s class='C0'>count</s> = <s class='c5'>0</s>;
+    <s class='c1'>mut</s> <s class='C0'>count</s> = <s class='c5'>0</s>
 
     <s class='c1'>fn</s> <s class='C3'>visit</s>(<s class='c1'>shadow</s> <s class='c6'>node</s>: <s class='C4'>Node</s>) {
-        <s class='C0'>count</s>++;
-        <s class='c6'>node</s>.<s class='c6'>items</s>.each(<s class='c6'>.</s><s class='C3'>visit</s>());
+        <s class='C0'>count</s>++
+        <s class='c6'>node</s>.<s class='c6'>items</s>.each(<s class='c6'>.</s><s class='C3'>visit</s>())
     }
 
-    <s class='c6'>node</s>.<s class='C3'>visit</s>();
-    <s class='c2'>return</s> <s class='C0'>count</s>;
+    <s class='c6'>node</s>.<s class='C3'>visit</s>()
+    <s class='c2'>return</s> <s class='C0'>count</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>let</s> <s class='c6'>tree</s> = <s class='C4'>Node</s>(items: [ <s class='C4'>Node</s>(), <s class='C4'>Node</s>() ]);
-    assert(<s class='c6'>tree</s>.<s class='C2'>count</s> == <s class='c5'>3</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c1'>let</s> <s class='c6'>tree</s> = <s class='C4'>Node</s>(items: [ <s class='C4'>Node</s>(), <s class='C4'>Node</s>() ])
+    assert(<s class='c6'>tree</s>.<s class='C2'>count</s> == <s class='c5'>3</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -120,24 +120,24 @@
 <p class='incomplete-sentence'>
 	We do not have real closures, as nested functions are not allowed to escape their parents. The code above is simply desugared into:
 </p>
-<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>Node</s> { items: <s class='C4'>Node</s>[] };
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>Node</s> { items: <s class='C4'>Node</s>[] }
 
 </span></span><s class='c1'>fn</s> <s class='C3'>visit</s>(<s class='c6'>node</s>: <s class='C4'>Node</s>, <s class='c1'>ref</s> <s class='C0'>count</s>: <s class='C4'>int</s>) {
-    <s class='C0'>count</s>++;
+    <s class='C0'>count</s>++
     <s class='c2'>for</s> (<s class='c1'>mut</s> <s class='C1'>i</s> = <s class='c5'>0</s>; <s class='C1'>i</s> &lt; <s class='c6'>node</s>.<s class='c6'>items</s>.len; <s class='C1'>i</s>++)
-        <s class='c6'>node</s>.<s class='c6'>items</s>[<s class='C1'>i</s>].<s class='C3'>visit</s>(:<s class='C0'>count</s>);
+        <s class='c6'>node</s>.<s class='c6'>items</s>[<s class='C1'>i</s>].<s class='C3'>visit</s>(:<s class='C0'>count</s>)
 }
 
 <s class='c1'>fn</s> <s class='C2'>count</s>(<s class='c6'>node</s>: <s class='C4'>Node</s>) {
-    <s class='c1'>mut</s> <s class='C0'>count</s> = <s class='c5'>0</s>;
-    <s class='c6'>node</s>.<s class='C3'>visit</s>(:<s class='C0'>count</s>);
-    <s class='c2'>return</s> <s class='C0'>count</s>;
+    <s class='c1'>mut</s> <s class='C0'>count</s> = <s class='c5'>0</s>
+    <s class='c6'>node</s>.<s class='C3'>visit</s>(:<s class='C0'>count</s>)
+    <s class='c2'>return</s> <s class='C0'>count</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>let</s> <s class='c6'>tree</s> = <s class='C4'>Node</s>(items: [ <s class='C4'>Node</s>(), <s class='C4'>Node</s>() ]);
-    assert(<s class='c6'>tree</s>.<s class='C2'>count</s> == <s class='c5'>3</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c1'>let</s> <s class='c6'>tree</s> = <s class='C4'>Node</s>(items: [ <s class='C4'>Node</s>(), <s class='C4'>Node</s>() ])
+    assert(<s class='c6'>tree</s>.<s class='C2'>count</s> == <s class='c5'>3</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -147,42 +147,42 @@
 <p class='incomplete-sentence'>
 	Lexical scoping can unite various language constructs into unique and interesting combinations, for example:
 </p>
-<pre><code class="standalone"><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C2'>reduce</s>(<s class='c6'>array</s>: &lt;T>[], reducer, <s class='c1'>mut</s> <s class='C0'>init</s>!state?: T) {
+<pre><code class=" standalone  best"><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C2'>reduce</s>(<s class='c6'>array</s>: &lt;T>[], reducer, <s class='c1'>mut</s> <s class='C0'>init</s>!state?: T) {
     <s class='c2'>for</s> (<s class='c1'>mut</s> <s class='C1'>i</s> = <s class='c6'>array</s>.len; <s class='C1'>i</s> --> <s class='c5'>0</s>; )
-        <s class='C0'>state</s> = reducer(<s class='c6'>array</s>[<s class='C1'>i</s>], <s class='C0'>state</s>);
+        <s class='C0'>state</s> = reducer(<s class='c6'>array</s>[<s class='C1'>i</s>], <s class='C0'>state</s>)
 
-    <s class='c2'>return</s> <s class='C0'>state</s>;
+    <s class='c2'>return</s> <s class='C0'>state</s>
 }
 
 </span></span><s class='c1'>fn</s> <s class='C2'>parent_fn</s>(<s class='c6'>array_of_T</s>: &lt;T>[]) {
 
     <s class='c3'>// A private type visible within child functions:</s>
-    <s class='c1'>struct</s> <s class='C4'>ChildType</s> { raw: T };
+    <s class='c1'>struct</s> <s class='C4'>ChildType</s> { raw: T }
 
-    <s class='c1'>let</s> <s class='c6'>array_of_ChildType</s> = <s class='c6'>array_of_T</s>.map(|<s class='c7'>v</s>| <s class='C4'>ChildType</s>(<s class='c7'>v</s>));
+    <s class='c1'>let</s> <s class='c6'>array_of_ChildType</s> = <s class='c6'>array_of_T</s>.map(|<s class='c7'>v</s>| <s class='C4'>ChildType</s>(<s class='c7'>v</s>))
 
     <s class='c3'>// An overloaded operator that mucks around with lexical scope:</s>
-    <s class='c1'>mut</s> <s class='C0'>number_of_additions_performed</s> = <s class='c5'>0</s>;
+    <s class='c1'>mut</s> <s class='C0'>number_of_additions_performed</s> = <s class='c5'>0</s>
 
     <s class='c1'>infix</s> fn <s class='C3'>+</s>(<s class='c7'>a</s>: <s class='C4'>ChildType</s>, <s class='c7'>b</s>: <s class='C4'>ChildType</s>) {
-        <s class='C0'>number_of_additions_performed</s>++;
-        <s class='c2'>return</s> <s class='C4'>ChildType</s>(<s class='c7'>a</s>.<s class='c7'>raw</s> + <s class='c7'>b</s>.<s class='c7'>raw</s>);
+        <s class='C0'>number_of_additions_performed</s>++
+        <s class='c2'>return</s> <s class='C4'>ChildType</s>(<s class='c7'>a</s>.<s class='c7'>raw</s> + <s class='c7'>b</s>.<s class='c7'>raw</s>)
     }
 
     <s class='c3'>// Using the overloaded operator within a generic child fn:</s>
-    <s class='c1'>fn</s> <s class='C2'>sum</s>(<s class='c6'>array</s>: _[]) = <s class='C2'>reduce</s>(<s class='c6'>array</s>, |<s class='c7'>a</s>, <s class='c7'>b</s>| <s class='c7'>a</s> + <s class='c7'>b</s>);
+    <s class='c1'>fn</s> <s class='C2'>sum</s>(<s class='c6'>array</s>: _[]) = <s class='C2'>reduce</s>(<s class='c6'>array</s>, |<s class='c7'>a</s>, <s class='c7'>b</s>| <s class='c7'>a</s> + <s class='c7'>b</s>)
 
     <s class='c3'>// ... note that summing the ChildType array is impure:</s>
-    <s class='c1'>let</s> <s class='c6'>actual</s> = <s class='C3'>sum</s>(<s class='c6'>array_of_ChildType</s>).raw;
+    <s class='c1'>let</s> <s class='c6'>actual</s> = <s class='C3'>sum</s>(<s class='c6'>array_of_ChildType</s>).raw
     <s class='c3'>//           ^^^ as it increments the counter above</s>
 
     assert(<s class='c6'>actual</s> == <s class='C2'>sum</s>(<s class='c6'>array_of_T</s>)
-        &amp;&amp; <s class='C0'>number_of_additions_performed</s> == <s class='c6'>array_of_T</s>.len);
+        &amp;&amp; <s class='C0'>number_of_additions_performed</s> == <s class='c6'>array_of_T</s>.len)
 
-    <s class='c2'>return</s> <s class='c6'>actual</s>;
+    <s class='c2'>return</s> <s class='c6'>actual</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
-<s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C2'>parent_fn</s>([ <s class='c5'>1</s>, <s class='c5'>2</s>, <s class='c5'>3</s> ]) - <s class='c5'>6</s>;
+<s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C2'>parent_fn</s>([ <s class='c5'>1</s>, <s class='c5'>2</s>, <s class='c5'>3</s> ]) - <s class='c5'>6</s>
 </span></span></code></pre>
 
 <p>
@@ -194,27 +194,27 @@
 <p class='incomplete-sentence'>
 	Imagine the basic lexical scoping example above was something larger, such that it needed to be split apart into multiple functions, perhaps across several files, making lexical scoping impractical:
 </p>
-<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>Node</s> { items: <s class='C4'>Node</s>[] };
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>Node</s> { items: <s class='C4'>Node</s>[] }
 
 </span></span><s class='c1'>fn</s> <s class='C3'>visit_each</s>(<s class='c6'>items</s>: <s class='C4'>Node</s>[], <s class='c1'>ref</s> <s class='C0'>count</s>: <s class='C4'>int</s>) {
-    <s class='c6'>items</s>.each(<s class='c6'>.</s><s class='C3'>visit</s>(:<s class='C0'>count</s>));
+    <s class='c6'>items</s>.each(<s class='c6'>.</s><s class='C3'>visit</s>(:<s class='C0'>count</s>))
 }
 
 <s class='c1'>fn</s> <s class='C3'>visit</s>(<s class='c6'>node</s>: <s class='C4'>Node</s>, <s class='c1'>ref</s> <s class='C0'>count</s>: <s class='C4'>int</s>) {
-    <s class='C0'>count</s>++;
-    <s class='c6'>node</s>.<s class='c6'>items</s>.<s class='C3'>visit_each</s>(:<s class='C0'>count</s>);
+    <s class='C0'>count</s>++
+    <s class='c6'>node</s>.<s class='c6'>items</s>.<s class='C3'>visit_each</s>(:<s class='C0'>count</s>)
 }
 
 <s class='c1'>fn</s> <s class='C2'>count</s>(<s class='c6'>node</s>: <s class='C4'>Node</s>) {
-    <s class='c1'>mut</s> <s class='C0'>count</s> = <s class='c5'>0</s>;
-    <s class='c6'>node</s>.<s class='C3'>visit</s>(:<s class='C0'>count</s>);
-    <s class='c2'>return</s> <s class='C0'>count</s>;
+    <s class='c1'>mut</s> <s class='C0'>count</s> = <s class='c5'>0</s>
+    <s class='c6'>node</s>.<s class='C3'>visit</s>(:<s class='C0'>count</s>)
+    <s class='c2'>return</s> <s class='C0'>count</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>let</s> <s class='c6'>tree</s> = <s class='C4'>Node</s>(items: [ <s class='C4'>Node</s>(), <s class='C4'>Node</s>() ]);
-    assert(<s class='c6'>tree</s>.<s class='C2'>count</s> == <s class='c5'>3</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c1'>let</s> <s class='c6'>tree</s> = <s class='C4'>Node</s>(items: [ <s class='C4'>Node</s>(), <s class='C4'>Node</s>() ])
+    assert(<s class='c6'>tree</s>.<s class='C2'>count</s> == <s class='c5'>3</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -227,27 +227,27 @@
 <p class='incomplete-sentence'>
 	When unable to benefit from lexical scoping, we can achieve similar terseness by using <a href="/tour/scope/implicit">implicit argument passing</a>:
 </p>
-<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>Node</s> { items: <s class='C4'>Node</s>[] };
+<pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>Node</s> { items: <s class='C4'>Node</s>[] }
 
 </span></span><s class='c1'>fn</s> <s class='C3'>visit_each</s>(<s class='c6'>items</s>: <s class='C4'>Node</s>[]) {
-    <s class='c6'>items</s>.each(<s class='c6'>.</s><s class='C3'>visit</s>());
+    <s class='c6'>items</s>.each(<s class='c6'>.</s><s class='C3'>visit</s>())
 }
 
 <s class='c1'>fn</s> <s class='C3'>visit</s>(<s class='c6'>node</s>: <s class='C4'>Node</s>, <s class='c1'>implicit</s> <s class='c1'>ref</s> <s class='C0'>count</s>: <s class='C4'>int</s>) {
-    <s class='C0'>count</s>++;
-    <s class='c6'>node</s>.<s class='c6'>items</s>.<s class='C3'>visit_each</s>();
+    <s class='C0'>count</s>++
+    <s class='c6'>node</s>.<s class='c6'>items</s>.<s class='C3'>visit_each</s>()
 }
 
 <s class='c1'>fn</s> <s class='C2'>count</s>(<s class='c6'>node</s>: <s class='C4'>Node</s>) {
-    <s class='c1'>implicit</s> <s class='c1'>mut</s> <s class='C0'>count</s> = <s class='c5'>0</s>;
-    <s class='c6'>node</s>.<s class='C3'>visit</s>();
-    <s class='c2'>return</s> <s class='C0'>count</s>;
+    <s class='c1'>implicit</s> <s class='c1'>mut</s> <s class='C0'>count</s> = <s class='c5'>0</s>
+    <s class='c6'>node</s>.<s class='C3'>visit</s>()
+    <s class='c2'>return</s> <s class='C0'>count</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>let</s> <s class='c6'>tree</s> = <s class='C4'>Node</s>(items: [ <s class='C4'>Node</s>(), <s class='C4'>Node</s>() ]);
-    assert(<s class='c6'>tree</s>.<s class='C2'>count</s> == <s class='c5'>3</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c1'>let</s> <s class='c6'>tree</s> = <s class='C4'>Node</s>(items: [ <s class='C4'>Node</s>(), <s class='C4'>Node</s>() ])
+    assert(<s class='c6'>tree</s>.<s class='C2'>count</s> == <s class='c5'>3</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 

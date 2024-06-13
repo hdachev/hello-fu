@@ -96,14 +96,14 @@
 	We allow you to call any function using either syntax:
 </p>
 <pre><code><s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>let</s> <s class='c6'>step</s> = <s class='c5'>1</s>;
+    <s class='c1'>let</s> <s class='c6'>step</s> = <s class='c5'>1</s>
     <s class='c1'>fn</s> <s class='C3'>increment</s>(<s class='c1'>ref</s> <s class='C1'>v</s>: <s class='C4'>int</s>)
-        <s class='C1'>v</s> += <s class='c6'>step</s>;
+        <s class='C1'>v</s> += <s class='c6'>step</s>
 
-    <s class='c1'>mut</s> <s class='C0'>ret</s> = -<s class='c5'>2</s>;
-    <s class='C3'>increment</s>(<s class='C0'>ret</s>);     <s class='c3'>// f(a)</s>
-    <s class='C0'>ret</s>.<s class='C3'>increment</s>();    <s class='c3'>// a.f()    Both are equivalent.</s>
-    <s class='c2'>return</s> <s class='C0'>ret</s>;
+    <s class='c1'>mut</s> <s class='C0'>ret</s> = -<s class='c5'>2</s>
+    <s class='C3'>increment</s>(<s class='C0'>ret</s>)      <s class='c3'>// f(a)</s>
+    <s class='C0'>ret</s>.<s class='C3'>increment</s>()     <s class='c3'>// a.f()    Both are equivalent.</s>
+    <s class='c2'>return</s> <s class='C0'>ret</s>
 }
 </code></pre>
 
@@ -129,15 +129,15 @@
 	Similarly, we do not require parentheses when making a call without arguments:
 </p>
 <pre><code><s class='c1'>struct</s> <s class='C4'>Dog</s> {
-    name:       <s class='C4'>string</s>;
-    dog_years:  <s class='C4'>int</s>;
+    name:       <s class='C4'>string</s>
+    dog_years:  <s class='C4'>int</s>
 }
 
 <s class='c1'>fn</s> <s class='C2'>human_years</s>(<s class='c7'>d</s>: <s class='C4'>Dog</s>)
     <s class='c7'>d</s>.<s class='c7'>dog_years</s> * <s class='c5'>5</s> + (<s class='c7'>d</s>.<s class='c7'>dog_years</s> > <s class='c5'>1</s> &amp;&amp; <s class='c5'>4</s>)
-                    + (<s class='c7'>d</s>.<s class='c7'>dog_years</s> > <s class='c5'>0</s> &amp;&amp; <s class='c5'>10</s>);
+                    + (<s class='c7'>d</s>.<s class='c7'>dog_years</s> > <s class='c5'>0</s> &amp;&amp; <s class='c5'>10</s>)
 
-<s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C4'>Dog</s>(<s class='c4'>"Robbie"</s>, dog_years: <s class='c5'>4</s>).<s class='C2'>human_years</s> - <s class='c5'>34</s>;
+<s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C4'>Dog</s>(<s class='c4'>"Robbie"</s>, dog_years: <s class='c5'>4</s>).<s class='C2'>human_years</s> - <s class='c5'>34</s>
 </code></pre>
 
 <p>
@@ -153,20 +153,20 @@
 	The example above saw us passing the parameter <code>dog_years: <s class='c5'>4</s></code> by name. An <code>:x</code> shorthand is available for the common <code>x: x</code> pattern, here <code>:<s class='C0'>dog_years</s></code> -
 </p>
 <pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>Dog</s> {
-    name:       <s class='C4'>string</s>;
-    dog_years:  <s class='C4'>int</s>;
+    name:       <s class='C4'>string</s>
+    dog_years:  <s class='C4'>int</s>
 }
 
 </span></span><s class='c1'>fn</s> <s class='C2'>Dog</s>(<s class='c6'>name</s>: <s class='C4'>string</s>, <s class='c6'>human_years</s>: <s class='C4'>int</s>) {
-    <s class='c1'>mut</s> <s class='C0'>dog_years</s> = <s class='c6'>human_years</s>;
-    <s class='c2'>if</s> (<s class='C0'>dog_years</s> > <s class='c5'>10</s>) <s class='C0'>dog_years</s> -= <s class='c5'>10</s>;
-    <s class='c2'>if</s> (<s class='C0'>dog_years</s> > <s class='c5'>14</s>) <s class='C0'>dog_years</s> -= <s class='c5'>4</s>;
+    <s class='c1'>mut</s> <s class='C0'>dog_years</s> = <s class='c6'>human_years</s>
+    <s class='c2'>if</s> (<s class='C0'>dog_years</s> > <s class='c5'>10</s>) <s class='C0'>dog_years</s> -= <s class='c5'>10</s>
+    <s class='c2'>if</s> (<s class='C0'>dog_years</s> > <s class='c5'>14</s>) <s class='C0'>dog_years</s> -= <s class='c5'>4</s>
 
-    <s class='C0'>dog_years</s> /= <s class='c5'>5</s>;
-    <s class='c2'>return</s> <s class='C3'>Dog</s>(:<s class='C0'>dog_years</s>, :<s class='c6'>name</s>);
+    <s class='C0'>dog_years</s> /= <s class='c5'>5</s>
+    <s class='c2'>return</s> <s class='C3'>Dog</s>(:<s class='C0'>dog_years</s>, :<s class='c6'>name</s>)
 }
 
-<s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C2'>Dog</s>(<s class='c4'>"Robbie"</s>, human_years: <s class='c5'>34</s>).dog_years - <s class='c5'>4</s>;
+<s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C2'>Dog</s>(<s class='c4'>"Robbie"</s>, human_years: <s class='c5'>34</s>).dog_years - <s class='c5'>4</s>
 </code></pre>
 
 <p>
@@ -187,13 +187,13 @@
 <p class='incomplete-sentence'>
 	Arguments may have default values, which are used when an argument is left unspecified:
 </p>
-<pre><code class="standalone"><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C2'>main</s>() {
+<pre><code class=" standalone"><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C2'>main</s>() {
 </span></span>    <s class='c1'>fn</s> <s class='C2'>approx_ellipse_perimeter</s>(<s class='c7'>a</s>: <s class='C4'>f32</s>, <s class='c7'>b</s> = <s class='c7'>a</s>)
-        <s class='c5'>2</s> * <s class='C4'>f32</s>.PI * sqrt(<s class='c5'>0.5</s> * (<s class='c7'>a</s> * <s class='c7'>a</s> + <s class='c7'>b</s> * <s class='c7'>b</s>));
+        <s class='c5'>2</s> * <s class='C4'>f32</s>.PI * sqrt(<s class='c5'>0.5</s> * (<s class='c7'>a</s> * <s class='c7'>a</s> + <s class='c7'>b</s> * <s class='c7'>b</s>))
 
     assert(<s class='C2'>approx_ellipse_perimeter</s>(<s class='c5'>10</s>)
-        == <s class='C2'>approx_ellipse_perimeter</s>(<s class='c5'>10</s>, <s class='c5'>10</s>));
-<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> <s class='c5'>0</s>;
+        == <s class='C2'>approx_ellipse_perimeter</s>(<s class='c5'>10</s>, <s class='c5'>10</s>))
+<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -206,21 +206,21 @@
 <p class='incomplete-sentence'>
 	A shorthand is available for zero-filled defaults, here <code><s class='c6'>reverse</s>?: <s class='C4'>bool</s></code> defaults to <code><s class='c5'>false</s></code>:
 </p>
-<pre><code class="standalone"><s class='c1'>fn</s> <s class='C3'>each</s>(<s class='c1'>ref</s> <s class='c6'>array</s>: _[], fn, <s class='c6'>reverse</s>?: <s class='C4'>bool</s>)
+<pre><code class=" standalone"><s class='c1'>fn</s> <s class='C3'>each</s>(<s class='c1'>ref</s> <s class='c6'>array</s>: _[], fn, <s class='c6'>reverse</s>?: <s class='C4'>bool</s>)
     <s class='c2'>for</s> (<s class='c1'>mut</s> <s class='C1'>i</s> = <s class='c5'>0</s>; <s class='C1'>i</s> &lt; <s class='c6'>array</s>.len; <s class='C1'>i</s>++) {
         <s class='c1'>shadow</s> <s class='c1'>let</s> <s class='c7'>i</s> = <s class='c6'>reverse</s>
             ? <s class='c6'>array</s>.len - <s class='c5'>1</s> - <s class='C1'>i</s>
-            : <s class='C1'>i</s>;
+            : <s class='C1'>i</s>
 
-        fn(<s class='c6'>array</s>[<s class='c7'>i</s>], ?:<s class='c7'>i</s>);
+        fn(<s class='c6'>array</s>[<s class='c7'>i</s>], ?:<s class='c7'>i</s>)
     }
 
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
     <s class='c1'>mut</s> <s class='C0'>result</s> = <s class='c5'>0</s>;
     [ <s class='c5'>1</s>, <s class='c5'>2</s>, <s class='c5'>3</s> ].<s class='C3'>each</s>(reverse: <s class='c5'>true</s>): |<s class='c6'>item</s>, <s class='c7'>i</s>|
-        (<s class='C0'>result</s> += <s class='c7'>i</s>) *= <s class='c6'>item</s>;
+        (<s class='C0'>result</s> += <s class='c7'>i</s>) *= <s class='c6'>item</s>
 
-    <s class='c2'>return</s> <s class='C0'>result</s> - <s class='c5'>14</s>;
+    <s class='c2'>return</s> <s class='C0'>result</s> - <s class='c5'>14</s>
 }
 </code></pre>
 
@@ -239,21 +239,21 @@
 <p class='incomplete-sentence'>
 	Note how the example above uses <code>?:<s class='c7'>i</s></code> to pass the array index into the iterator block - this allows us to provide it with a block that doesn't have an <code><s class='C1'>i</s></code> argument:
 </p>
-<pre><code class="standalone"><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C2'>main</s>() {
+<pre><code class=" standalone"><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C2'>main</s>() {
     <s class='c1'>fn</s> <s class='C3'>each</s>(<s class='c1'>ref</s> <s class='c6'>array</s>: _[], fn, <s class='c6'>reverse</s>?: <s class='C4'>bool</s>)
         <s class='c2'>for</s> (<s class='c1'>mut</s> <s class='C1'>i</s> = <s class='c5'>0</s>; <s class='C1'>i</s> &lt; <s class='c6'>array</s>.len; <s class='C1'>i</s>++) {
             <s class='c1'>shadow</s> <s class='c1'>let</s> <s class='c7'>i</s> = <s class='c6'>reverse</s>
                 ? <s class='c6'>array</s>.len - <s class='c5'>1</s> - <s class='C1'>i</s>
-                : <s class='C1'>i</s>;
+                : <s class='C1'>i</s>
 
-            fn(<s class='c6'>array</s>[<s class='c7'>i</s>], ?:<s class='c7'>i</s>);
+            fn(<s class='c6'>array</s>[<s class='c7'>i</s>], ?:<s class='c7'>i</s>)
         }
 
 </span></span>    <s class='c1'>mut</s> <s class='C0'>result</s> = <s class='c5'>0</s>;
     [ <s class='c5'>1</s>, <s class='c5'>2</s>, <s class='c5'>3</s> ].<s class='C3'>each</s>(reverse: <s class='c5'>true</s>): |<s class='c6'>item</s>|
-        (<s class='C0'>result</s> += <s class='c6'>item</s>) *= <s class='c6'>item</s>;
+        (<s class='C0'>result</s> += <s class='c6'>item</s>) *= <s class='c6'>item</s>
 <span class='snip-hide snip-hide-bottom'><span>
-    <s class='c2'>return</s> <s class='C0'>result</s> - <s class='c5'>23</s>;
+    <s class='c2'>return</s> <s class='C0'>result</s> - <s class='c5'>23</s>
 }
 </span></span></code></pre>
 

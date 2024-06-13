@@ -90,8 +90,8 @@
 	Labels are introduced with a leading <code><s class='c4'>:</s></code>, which is symmetric to how they are later referred to. Here is how to <code><s class='c2'>continue</s></code> or <code><s class='c2'>break</s></code> from a nested loop:
 </p>
 <pre><code class="exit  "><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>Recipe</s> {
-    name:           <s class='C4'>string</s>;
-    ingredients:    <s class='C4'>string</s>[];
+    name:           <s class='C4'>string</s>
+    ingredients:    <s class='C4'>string</s>[]
 }
 
 <s class='c1'>fn</s> <s class='C2'>whats_for_dinner</s>(<s class='c6'>recipes</s>: <s class='C4'>Recipe</s>[], <s class='c6'>fridge</s>: <s class='C4'>string</s>[]) {
@@ -101,25 +101,25 @@
             <s class='c2'>if</s> !(<s class='c6'>fridge</s>.has(<s class='c6'>ingredient</s>))
                 <s class='c2'>continue</s> :<s class='C5'>OUTER_LOOP</s>;
 
-        <s class='c2'>return</s> <s class='c6'>recipe</s>;
+        <s class='c2'>return</s> <s class='c6'>recipe</s>
     }
 <span class='snip-hide snip-hide-bottom'><span>
-    <s class='c2'>return</s> [];
+    <s class='c2'>return</s> []
 }
 
 <s class='c1'>fn</s> <s class='C3'>main</s>() {
     <s class='c1'>mut</s> <s class='c6'>recipes</s> = [
         <s class='C4'>Recipe</s>(<s class='c4'>"Aglio, Olio, Peperoncino"</s>,
             [ <s class='c4'>"Spaghetti"</s>, <s class='c4'>"Aglio"</s>, <s class='c4'>"Olio"</s>, <s class='c4'>"Peperoncino"</s> ]),
-    ];
+    ]
 
     <s class='c1'>let</s> <s class='c6'>recipe</s> = <s class='C2'>whats_for_dinner</s>(:<s class='c6'>recipes</s>, []) || {
-        println(<s class='c4'>"Looks like we won't be having dinner tonight."</s>);
-        <s class='c2'>return</s> <s class='c5'>1</s>;
+        println(<s class='c4'>"Looks like we won't be having dinner tonight."</s>)
+        <s class='c2'>return</s> <s class='c5'>1</s>
     }
 
-    println(<s class='c4'>"We're having "</s> <s class='c6'>recipe</s>.<s class='c6'>name</s> <s class='c4'>" for dinner."</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    println(<s class='c4'>"We're having "</s> <s class='c6'>recipe</s>.<s class='c6'>name</s> <s class='c4'>" for dinner."</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -133,41 +133,41 @@
 	Of note is that parent function <strong>labels are available to child functions</strong>:
 </p>
 <pre><code class="exit  "><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>Recipe</s> {
-    name:           <s class='C4'>string</s>;
-    ingredients:    <s class='C4'>string</s>[];
+    name:           <s class='C4'>string</s>
+    ingredients:    <s class='C4'>string</s>[]
 }
 
 <s class='c1'>fn</s> <s class='C3'>whats_for_dinner</s>(<s class='c6'>recipes</s>: <s class='C4'>Recipe</s>[], <s class='c6'>fridge</s>: <s class='C4'>string</s>[]) {
 </span></span>    :<s class='C5'>OUTER_LOOP</s>
     recipes.each: |<s class='c6'>recipe</s>| {
         <s class='c1'>fn</s> <s class='C3'>fail</s>(<s class='c6'>reason</s>: <s class='C4'>string</s>) {
-            println(<s class='c4'>"Cannot prepare "</s> <s class='c6'>recipe</s>.<s class='c6'>name</s> <s class='c4'>": "</s> reason);
+            println(<s class='c4'>"Cannot prepare "</s> <s class='c6'>recipe</s>.<s class='c6'>name</s> <s class='c4'>": "</s> reason)
             <s class='c2'>continue</s> :<s class='C5'>OUTER_LOOP</s>;
         }
 
         <s class='c6'>recipe</s>.<s class='c6'>ingredients</s>.each: |<s class='c6'>ingredient</s>|
             <s class='c2'>if</s> !(<s class='c6'>fridge</s>.has(<s class='c6'>ingredient</s>))
-                <s class='C3'>fail</s>(<s class='c4'>"We don't have "</s> ~ <s class='c6'>ingredient</s>);
+                <s class='C3'>fail</s>(<s class='c4'>"We don't have "</s> ~ <s class='c6'>ingredient</s>)
 
-        <s class='c2'>return</s> <s class='c6'>recipe</s>;
+        <s class='c2'>return</s> <s class='c6'>recipe</s>
     }
 <span class='snip-hide snip-hide-bottom'><span>
-    <s class='c2'>return</s> [];
+    <s class='c2'>return</s> []
 }
 
 <s class='c1'>fn</s> <s class='C3'>main</s>() {
     <s class='c1'>mut</s> <s class='c6'>recipes</s> = [
         <s class='C4'>Recipe</s>(<s class='c4'>"Aglio, Olio, Peperoncino"</s>,
             [ <s class='c4'>"Spaghetti"</s>, <s class='c4'>"Aglio"</s>, <s class='c4'>"Olio"</s>, <s class='c4'>"Peperoncino"</s> ]),
-    ];
+    ]
 
     <s class='c1'>let</s> <s class='c6'>recipe</s> = <s class='C3'>whats_for_dinner</s>(:<s class='c6'>recipes</s>, []) || {
-        println(<s class='c4'>"Looks like we won't be having dinner tonight."</s>);
-        <s class='c2'>return</s> <s class='c5'>1</s>;
+        println(<s class='c4'>"Looks like we won't be having dinner tonight."</s>)
+        <s class='c2'>return</s> <s class='c5'>1</s>
     }
 
-    println(<s class='c4'>"We're having "</s> <s class='c6'>recipe</s>.<s class='c6'>name</s> <s class='c4'>" for dinner."</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    println(<s class='c4'>"We're having "</s> <s class='c6'>recipe</s>.<s class='c6'>name</s> <s class='c4'>" for dinner."</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -178,38 +178,38 @@
 	Because <code><s class='c1'>fn</s> <s class='C3'>fail</s></code> is now defined in the outer loop, the label has become redundant:
 </p>
 <pre><code class="exit  "><span class='snip-hide snip-hide-top'><span><s class='c1'>struct</s> <s class='C4'>Recipe</s> {
-    name:           <s class='C4'>string</s>;
-    ingredients:    <s class='C4'>string</s>[];
+    name:           <s class='C4'>string</s>
+    ingredients:    <s class='C4'>string</s>[]
 }
 
 <s class='c1'>fn</s> <s class='C3'>whats_for_dinner</s>(<s class='c6'>recipes</s>: <s class='C4'>Recipe</s>[], <s class='c6'>fridge</s>: <s class='C4'>string</s>[]) {
 </span></span>    recipes.each: |<s class='c6'>recipe</s>| {
         <s class='c1'>fn</s> <s class='C3'>fail</s>(<s class='c6'>reason</s>: <s class='C4'>string</s>)
-            <s class='c2'>continue</s> println(<s class='c4'>"Cannot prepare "</s> <s class='c6'>recipe</s>.<s class='c6'>name</s> <s class='c4'>": "</s> reason);
+            <s class='c2'>continue</s> println(<s class='c4'>"Cannot prepare "</s> <s class='c6'>recipe</s>.<s class='c6'>name</s> <s class='c4'>": "</s> reason)
 
         <s class='c6'>recipe</s>.<s class='c6'>ingredients</s>.each: |<s class='c6'>ingredient</s>|
             <s class='c2'>if</s> !(<s class='c6'>fridge</s>.has(<s class='c6'>ingredient</s>))
-                <s class='C3'>fail</s>(<s class='c4'>"We don't have "</s> ~ <s class='c6'>ingredient</s>);
+                <s class='C3'>fail</s>(<s class='c4'>"We don't have "</s> ~ <s class='c6'>ingredient</s>)
 
-        <s class='c2'>return</s> <s class='c6'>recipe</s>;
+        <s class='c2'>return</s> <s class='c6'>recipe</s>
     }
 <span class='snip-hide snip-hide-bottom'><span>
-    <s class='c2'>return</s> [];
+    <s class='c2'>return</s> []
 }
 
 <s class='c1'>fn</s> <s class='C3'>main</s>() {
     <s class='c1'>mut</s> <s class='c6'>recipes</s> = [
         <s class='C4'>Recipe</s>(<s class='c4'>"Aglio, Olio, Peperoncino"</s>,
             [ <s class='c4'>"Spaghetti"</s>, <s class='c4'>"Aglio"</s>, <s class='c4'>"Olio"</s>, <s class='c4'>"Peperoncino"</s> ]),
-    ];
+    ]
 
     <s class='c1'>let</s> <s class='c6'>recipe</s> = <s class='C3'>whats_for_dinner</s>(:<s class='c6'>recipes</s>, []) || {
-        println(<s class='c4'>"Looks like we won't be having dinner tonight."</s>);
-        <s class='c2'>return</s> <s class='c5'>1</s>;
+        println(<s class='c4'>"Looks like we won't be having dinner tonight."</s>)
+        <s class='c2'>return</s> <s class='c5'>1</s>
     }
 
-    println(<s class='c4'>"We're having "</s> <s class='c6'>recipe</s>.<s class='c6'>name</s> <s class='c4'>" for dinner."</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    println(<s class='c4'>"We're having "</s> <s class='c6'>recipe</s>.<s class='c6'>name</s> <s class='c4'>" for dinner."</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -229,10 +229,10 @@
                 <s class='c2'>if</s> (<s class='C1'>i</s> == <s class='C1'>j</s>)
                     <s class='c2'>break</s> :<s class='C5'>LABEL</s>;
 
-        println(<s class='c4'>"This is never executed."</s>);
+        println(<s class='c4'>"This is never executed."</s>)
     }
 <span class='snip-hide snip-hide-bottom'><span>
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></span></code></pre>
 
@@ -244,10 +244,10 @@
 </p>
 <pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C3'>main</s>() {
 </span></span>    <s class='c1'>let</s> <s class='c6'>zero</s> = {
-        println(<s class='c4'>"Effect!"</s>);
+        println(<s class='c4'>"Effect!"</s>)
         <s class='c5'>0</s>
-    };
-<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> <s class='c6'>zero</s>;
+    }
+<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> <s class='c6'>zero</s>
 }
 </span></span></code></pre>
 
@@ -273,10 +273,10 @@
 
             -<s class='c5'>1</s>
         }
-    };
+    }
 
-    assert(<s class='c6'>zero</s> == <s class='c5'>0</s>);
-<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> <s class='c6'>zero</s>;
+    assert(<s class='c6'>zero</s> == <s class='c5'>0</s>)
+<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> <s class='c6'>zero</s>
 }
 </span></span></code></pre>
 

@@ -114,21 +114,21 @@
 </p>
 <pre><code><s class='c1'>fn</s> <s class='C2'>sum</s>(<s class='c7'>v</s>: &lt;T>[])
     <s class='c2'>case</s> (T.is::arithmetic): T {
-        <s class='c1'>mut</s> <s class='C0'>ret</s>: T;
-        <s class='c7'>v</s>.each: |<s class='c6'>it</s>| <s class='C0'>ret</s> += <s class='c6'>it</s>;
-        <s class='c2'>return</s> <s class='C0'>ret</s>;
+        <s class='c1'>mut</s> <s class='C0'>ret</s>: T
+        <s class='c7'>v</s>.each: |<s class='c6'>it</s>| <s class='C0'>ret</s> += <s class='c6'>it</s>
+        <s class='c2'>return</s> <s class='C0'>ret</s>
     }
     <s class='c2'>case</s> (T.is::flags): T {
-        <s class='c1'>mut</s> <s class='C0'>ret</s>: T;
-        <s class='c7'>v</s>.each: |<s class='c6'>it</s>| <s class='C0'>ret</s> |= <s class='c6'>it</s>;
-        <s class='c2'>return</s> <s class='C0'>ret</s>;
+        <s class='c1'>mut</s> <s class='C0'>ret</s>: T
+        <s class='c7'>v</s>.each: |<s class='c6'>it</s>| <s class='C0'>ret</s> |= <s class='c6'>it</s>
+        <s class='c2'>return</s> <s class='C0'>ret</s>
     }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>using</s> <s class='c1'>flags</s> <s class='C4'>F</s> { A; B; C }
 
 <s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C2'>sum</s>([ A, B|A, C|B ]) == A|B|C
        &amp;&amp; <s class='C2'>sum</s>([ <s class='c5'>1</s>, <s class='c5'>2</s>, <s class='c5'>3</s> ]) == <s class='c5'>6</s>
-            ? <s class='c5'>0</s> : <s class='c5'>1</s>;
+            ? <s class='c5'>0</s> : <s class='c5'>1</s>
 </span></span></code></pre>
 
 <p>
@@ -138,22 +138,22 @@
 	The definition above could be split if needed, in which case both are evaluated on equal terms, and an ambiguity error will be raised if both match:
 </p>
 <pre><code><s class='c1'>fn</s> <s class='C2'>sum</s>(<s class='c7'>v</s>: &lt;T>[]) <s class='c2'>case</s> (T.is::arithmetic): T {
-    <s class='c1'>mut</s> <s class='C0'>ret</s>: T;
-    <s class='c7'>v</s>.each: |<s class='c6'>it</s>| <s class='C0'>ret</s> += <s class='c6'>it</s>;
-    <s class='c2'>return</s> <s class='C0'>ret</s>;
+    <s class='c1'>mut</s> <s class='C0'>ret</s>: T
+    <s class='c7'>v</s>.each: |<s class='c6'>it</s>| <s class='C0'>ret</s> += <s class='c6'>it</s>
+    <s class='c2'>return</s> <s class='C0'>ret</s>
 }
 
 <s class='c1'>fn</s> <s class='C2'>sum</s>(<s class='c7'>v</s>: &lt;T>[]) <s class='c2'>case</s> (T.is::flags): T {
-    <s class='c1'>mut</s> <s class='C0'>ret</s>: T;
-    <s class='c7'>v</s>.each: |<s class='c6'>it</s>| <s class='C0'>ret</s> |= <s class='c6'>it</s>;
-    <s class='c2'>return</s> <s class='C0'>ret</s>;
+    <s class='c1'>mut</s> <s class='C0'>ret</s>: T
+    <s class='c7'>v</s>.each: |<s class='c6'>it</s>| <s class='C0'>ret</s> |= <s class='c6'>it</s>
+    <s class='c2'>return</s> <s class='C0'>ret</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>using</s> <s class='c1'>flags</s> <s class='C4'>F</s> { A; B; C }
 
 <s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C2'>sum</s>([ A, B|A, C|B ]) == A|B|C
        &amp;&amp; <s class='C2'>sum</s>([ <s class='c5'>1</s>, <s class='c5'>2</s>, <s class='c5'>3</s> ]) == <s class='c5'>6</s>
-            ? <s class='c5'>0</s> : <s class='c5'>1</s>;
+            ? <s class='c5'>0</s> : <s class='c5'>1</s>
 </span></span></code></pre>
 
 <p>
@@ -177,16 +177,16 @@
 <h3 id="operator-overloading"><a href="#operator-overloading" class="h-anchor">
 	Operator Overloading
 </a></h3>
-<pre><code><s class='c1'>struct</s> <s class='C4'>BitSet</s> { data: <s class='C4'>u8</s>[] };
+<pre><code><s class='c1'>struct</s> <s class='C4'>BitSet</s> { data: <s class='C4'>u8</s>[] }
 
 <s class='c1'>infix</s> fn <s class='C3'>|=</s>(ref .<s class='C0'>data</s> left, .<s class='c6'>data</s> right) {
-    <s class='C0'>left</s>.grow(max(<s class='C0'>left</s>.len, <s class='c6'>right</s>.len));
-    <s class='c6'>right</s>.each: |<s class='c7'>v</s>, <s class='c7'>i</s>| <s class='C0'>left</s>[<s class='c7'>i</s>] |= <s class='c7'>v</s>;
+    <s class='C0'>left</s>.grow(max(<s class='C0'>left</s>.len, <s class='c6'>right</s>.len))
+    <s class='c6'>right</s>.each: |<s class='c7'>v</s>, <s class='c7'>i</s>| <s class='C0'>left</s>[<s class='c7'>i</s>] |= <s class='c7'>v</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>a</s> = <s class='C4'>BitSet</s>([ <s class='c5'>7</s>.u8 ]);
-    <s class='C1'>a</s> <s class='C3'>|=</s> <s class='C4'>BitSet</s>([ <s class='c5'>9</s>.u8 ]);
+    <s class='c1'>mut</s> <s class='C1'>a</s> = <s class='C4'>BitSet</s>([ <s class='c5'>7</s>.u8 ])
+    <s class='C1'>a</s> <s class='C3'>|=</s> <s class='C4'>BitSet</s>([ <s class='c5'>9</s>.u8 ])
     <s class='C1'>a</s>.<s class='C1'>data</s>[<s class='c5'>0</s>] == <s class='c5'>15</s> ? <s class='c5'>0</s> : <s class='c5'>1</s>
 }
 </span></span></code></pre>

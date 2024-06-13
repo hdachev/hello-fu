@@ -98,13 +98,13 @@
 	The basic idea is simple - these two variables need not point to different values:
 </p>
 <pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C2'>test</s>() {
-</span></span>    <s class='c1'>let</s> <s class='c7'>a</s> = [ <s class='c5'>1</s>, <s class='c5'>2</s>, <s class='c5'>3</s>, <s class='c5'>4</s>, <s class='c5'>5</s>, <s class='c5'>6</s>, <s class='c5'>7</s> ];
-    <s class='c1'>let</s> <s class='c7'>b</s> = <s class='c7'>a</s>;
+</span></span>    <s class='c1'>let</s> <s class='c7'>a</s> = [ <s class='c5'>1</s>, <s class='c5'>2</s>, <s class='c5'>3</s>, <s class='c5'>4</s>, <s class='c5'>5</s>, <s class='c5'>6</s>, <s class='c5'>7</s> ]
+    <s class='c1'>let</s> <s class='c7'>b</s> = <s class='c7'>a</s>
 <span class='snip-hide snip-hide-bottom'><span>
-    <s class='c2'>return</s> <s class='c7'>b</s>;
+    <s class='c2'>return</s> <s class='c7'>b</s>
 }
 
-<s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C2'>test</s>.len - <s class='c5'>7</s>;
+<s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C2'>test</s>.len - <s class='c5'>7</s>
 </span></span></code></pre>
 
 <p>
@@ -120,19 +120,19 @@
 	Bindings either have value semantics or reference semantics, and either can be mutable or immutable:
 </p>
 <pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C3'>test</s>(<s class='c1'>ref</s> <s class='C0'>place</s>, <s class='c1'>const</s> <s class='c6'>value</s>) {
-</span></span>    <s class='c1'>let</s> <s class='c1'>const</s> <s class='c1'>val</s> <s class='c7'>a</s> = <s class='C0'>place</s> || <s class='c6'>value</s>;
-    <s class='c1'>let</s>   <s class='c1'>mut</s> <s class='c1'>val</s> <s class='C1'>b</s> = <s class='C0'>place</s> || <s class='c6'>value</s>;
+</span></span>    <s class='c1'>let</s> <s class='c1'>const</s> <s class='c1'>val</s> <s class='c7'>a</s> = <s class='C0'>place</s> || <s class='c6'>value</s>
+    <s class='c1'>let</s>   <s class='c1'>mut</s> <s class='c1'>val</s> <s class='C1'>b</s> = <s class='C0'>place</s> || <s class='c6'>value</s>
 
-    <s class='c1'>let</s> <s class='c1'>const</s> <s class='c1'>ref</s> <s class='c7'>c</s> = <s class='C0'>place</s>;
-    <s class='c1'>let</s>   <s class='c1'>mut</s> <s class='c1'>ref</s> <s class='C1'>d</s> = <s class='C0'>place</s>;
+    <s class='c1'>let</s> <s class='c1'>const</s> <s class='c1'>ref</s> <s class='c7'>c</s> = <s class='C0'>place</s>
+    <s class='c1'>let</s>   <s class='c1'>mut</s> <s class='c1'>ref</s> <s class='C1'>d</s> = <s class='C0'>place</s>
 <span class='snip-hide snip-hide-bottom'><span>
-    <s class='C0'>d</s> += <s class='C1'>b</s> += <s class='c7'>c</s> + <s class='c7'>a</s>;
+    <s class='C0'>d</s> += <s class='C1'>b</s> += <s class='c7'>c</s> + <s class='c7'>a</s>
 }
 
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>0</s>;
-    <s class='C3'>test</s>(<s class='C1'>v</s>, <s class='C1'>v</s>);
-    <s class='c2'>return</s> <s class='C1'>v</s>;
+    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>0</s>
+    <s class='C3'>test</s>(<s class='C1'>v</s>, <s class='C1'>v</s>)
+    <s class='c2'>return</s> <s class='C1'>v</s>
 }
 </span></span></code></pre>
 
@@ -169,25 +169,25 @@
 <pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C3'>test</s>(<s class='c1'>ref</s> <s class='C0'>place</s>, <s class='c1'>const</s> <s class='c6'>value</s>) {
 </span></span>    <s class='c3'>// Shorthand:               // Equivalent to:</s>
 
-    <s class='c1'>let</s> <s class='c7'>a</s> = <s class='C0'>place</s> || <s class='c6'>value</s>;     <s class='c3'>/*  val a           = ...
+    <s class='c1'>let</s> <s class='c7'>a</s> = <s class='C0'>place</s> || <s class='c6'>value</s>      <s class='c3'>/*  val a           = ...
                                     const a         = ...
                                     let val a       = ...
                                     let const a     = ...
                                     let const val a = ...   */</s>
 
-    <s class='c1'>mut</s> <s class='C1'>b</s> = <s class='C0'>place</s> || <s class='c6'>value</s>;     <s class='c3'>/*  mut val a       = ...
+    <s class='c1'>mut</s> <s class='C1'>b</s> = <s class='C0'>place</s> || <s class='c6'>value</s>      <s class='c3'>/*  mut val a       = ...
                                     let mut a       = ...
                                     let mut val a   = ...   */</s>
 
-    <s class='c1'>ref</s> <s class='C1'>c</s> = <s class='C0'>place</s>;              <s class='c3'>/*  let ref c       = ...   */</s>
+    <s class='c1'>ref</s> <s class='C1'>c</s> = <s class='C0'>place</s>               <s class='c3'>/*  let ref c       = ...   */</s>
 <span class='snip-hide snip-hide-bottom'><span>
-    <s class='C0'>c</s> += <s class='C1'>b</s> += <s class='c7'>a</s>;
+    <s class='C0'>c</s> += <s class='C1'>b</s> += <s class='c7'>a</s>
 }
 
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>0</s>;
-    <s class='C3'>test</s>(<s class='C1'>v</s>, <s class='C1'>v</s>);
-    <s class='c2'>return</s> <s class='C1'>v</s>;
+    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>0</s>
+    <s class='C3'>test</s>(<s class='C1'>v</s>, <s class='C1'>v</s>)
+    <s class='c2'>return</s> <s class='C1'>v</s>
 }
 </span></span></code></pre>
 
@@ -198,13 +198,13 @@
 	In function argument position the <code><s class='c1'>let</s></code> is always omitted, so these look like:
 </p>
 <pre><code><s class='c1'>fn</s> <s class='C3'>test</s>(<s class='c7'>a</s>: <s class='C4'>int</s>, <s class='c1'>mut</s> <s class='C1'>b</s>: <s class='C4'>int</s>, <s class='c1'>ref</s> <s class='C1'>c</s>: <s class='C4'>int</s>) {
-    <s class='C1'>c</s> += <s class='C1'>b</s> += <s class='c7'>a</s>;
+    <s class='C1'>c</s> += <s class='C1'>b</s> += <s class='c7'>a</s>
 }
 <span class='snip-hide snip-hide-bottom'><span>
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>0</s>;
-    <s class='C3'>test</s>(<s class='C1'>v</s>, <s class='C1'>v</s>, <s class='C1'>v</s>);
-    <s class='c2'>return</s> <s class='C1'>v</s>;
+    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>0</s>
+    <s class='C3'>test</s>(<s class='C1'>v</s>, <s class='C1'>v</s>, <s class='C1'>v</s>)
+    <s class='c2'>return</s> <s class='C1'>v</s>
 }
 </span></span></code></pre>
 
@@ -215,13 +215,13 @@
 	Currently we also run with a Go &amp; Python-like walrus <em>let expression</em>:
 </p>
 <pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C3'>test</s>(<s class='c1'>ref</s> <s class='C1'>b</s>: <s class='C4'>int</s>) {
-</span></span>    a <s class='c7'>:=</s> <s class='C1'>b</s>;
-<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> (<s class='C1'>b</s> += <s class='c7'>a</s>) += <s class='c7'>a</s>;
+</span></span>    a <s class='c7'>:=</s> <s class='C1'>b</s>
+<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> (<s class='C1'>b</s> += <s class='c7'>a</s>) += <s class='c7'>a</s>
 }
 
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>1</s>;
-    <s class='c2'>return</s> <s class='C3'>test</s>(<s class='C1'>v</s>) - <s class='c5'>3</s>;
+    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>1</s>
+    <s class='c2'>return</s> <s class='C3'>test</s>(<s class='C1'>v</s>) - <s class='c5'>3</s>
 }
 </span></span></code></pre>
 
@@ -229,13 +229,13 @@
 	... which is equivalent to:
 </p>
 <pre><code><span class='snip-hide snip-hide-top'><span><s class='c1'>fn</s> <s class='C3'>test</s>(<s class='c1'>ref</s> <s class='C1'>b</s>: <s class='C4'>int</s>) {
-</span></span>    <s class='c1'>let</s> <s class='c7'>a</s> = <s class='C1'>b</s>;
-<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> (<s class='C1'>b</s> += <s class='c7'>a</s>) += <s class='c7'>a</s>;
+</span></span>    <s class='c1'>let</s> <s class='c7'>a</s> = <s class='C1'>b</s>
+<span class='snip-hide snip-hide-bottom'><span>    <s class='c2'>return</s> (<s class='C1'>b</s> += <s class='c7'>a</s>) += <s class='c7'>a</s>
 }
 
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>1</s>;
-    <s class='c2'>return</s> <s class='C3'>test</s>(<s class='C1'>v</s>) - <s class='c5'>3</s>;
+    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>1</s>
+    <s class='c2'>return</s> <s class='C3'>test</s>(<s class='C1'>v</s>) - <s class='c5'>3</s>
 }
 </span></span></code></pre>
 

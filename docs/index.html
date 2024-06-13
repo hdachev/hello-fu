@@ -217,34 +217,34 @@
 <div class="lnk-lbl">Feature Highlight</div>
 <div class="lnk-ttl">Universal Function Call Syntax</div>
 <pre><code><s class='c1'>struct</s> <s class='C4'>Dog</s> {
-    name:       <s class='C4'>string</s>;
-    dog_years:  <s class='C4'>int</s>;
+    name:       <s class='C4'>string</s>
+    dog_years:  <s class='C4'>int</s>
 }
 
 </span><s class='c1'>fn</s> <s class='C2'>Dog</s>(<s class='c6'>name</s>: <s class='C4'>string</s>, <s class='c6'>human_years</s>: <s class='C4'>int</s>) {
-    <s class='c1'>mut</s> <s class='C0'>dog_years</s> = <s class='c6'>human_years</s>;
-    <s class='c2'>if</s> (<s class='C0'>dog_years</s> > <s class='c5'>10</s>) <s class='C0'>dog_years</s> -= <s class='c5'>10</s>;
-    <s class='c2'>if</s> (<s class='C0'>dog_years</s> > <s class='c5'>14</s>) <s class='C0'>dog_years</s> -= <s class='c5'>4</s>;
+    <s class='c1'>mut</s> <s class='C0'>dog_years</s> = <s class='c6'>human_years</s>
+    <s class='c2'>if</s> (<s class='C0'>dog_years</s> > <s class='c5'>10</s>) <s class='C0'>dog_years</s> -= <s class='c5'>10</s>
+    <s class='c2'>if</s> (<s class='C0'>dog_years</s> > <s class='c5'>14</s>) <s class='C0'>dog_years</s> -= <s class='c5'>4</s>
 
-    <s class='C0'>dog_years</s> /= <s class='c5'>5</s>;
-    <s class='c2'>return</s> <s class='C3'>Dog</s>(:<s class='C0'>dog_years</s>, :<s class='c6'>name</s>);
+    <s class='C0'>dog_years</s> /= <s class='c5'>5</s>
+    <s class='c2'>return</s> <s class='C3'>Dog</s>(:<s class='C0'>dog_years</s>, :<s class='c6'>name</s>)
 }
 
-<s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C2'>Dog</s>(<s class='c4'>"Robbie"</s>, human_years: <s class='c5'>34</s>).dog_years - <s class='c5'>4</s>;
+<s class='c1'>fn</s> <s class='C2'>main</s>() <s class='C2'>Dog</s>(<s class='c4'>"Robbie"</s>, human_years: <s class='c5'>34</s>).dog_years - <s class='c5'>4</s>
 </code></pre>
 </a><a class="demo-link" href="/tour/syntax-and-semantics/overloading">
 <div class="lnk-lbl">Feature Highlight</div>
 <div class="lnk-ttl">Overloading Without Ambiguity</div>
-<pre><code><s class='c1'>struct</s> <s class='C4'>BitSet</s> { data: <s class='C4'>u8</s>[] };
+<pre><code><s class='c1'>struct</s> <s class='C4'>BitSet</s> { data: <s class='C4'>u8</s>[] }
 
 <s class='c1'>infix</s> fn <s class='C3'>|=</s>(ref .<s class='C0'>data</s> left, .<s class='c6'>data</s> right) {
-    <s class='C0'>left</s>.grow(max(<s class='C0'>left</s>.len, <s class='c6'>right</s>.len));
-    <s class='c6'>right</s>.each: |<s class='c7'>v</s>, <s class='c7'>i</s>| <s class='C0'>left</s>[<s class='c7'>i</s>] |= <s class='c7'>v</s>;
+    <s class='C0'>left</s>.grow(max(<s class='C0'>left</s>.len, <s class='c6'>right</s>.len))
+    <s class='c6'>right</s>.each: |<s class='c7'>v</s>, <s class='c7'>i</s>| <s class='C0'>left</s>[<s class='c7'>i</s>] |= <s class='c7'>v</s>
 }
 
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>a</s> = <s class='C4'>BitSet</s>([ <s class='c5'>7</s>.u8 ]);
-    <s class='C1'>a</s> <s class='C3'>|=</s> <s class='C4'>BitSet</s>([ <s class='c5'>9</s>.u8 ]);
+    <s class='c1'>mut</s> <s class='C1'>a</s> = <s class='C4'>BitSet</s>([ <s class='c5'>7</s>.u8 ])
+    <s class='C1'>a</s> <s class='C3'>|=</s> <s class='C4'>BitSet</s>([ <s class='c5'>9</s>.u8 ])
     <s class='C1'>a</s>.<s class='C1'>data</s>[<s class='c5'>0</s>] == <s class='c5'>15</s> ? <s class='c5'>0</s> : <s class='c5'>1</s>
 }
 </span></code></pre>
@@ -252,35 +252,35 @@
 <div class="lnk-lbl">Feature Highlight</div>
 <div class="lnk-ttl">Value vs Reference Semantics</div>
 <pre><code><s class='c1'>fn</s> <s class='C3'>test</s>(<s class='c1'>ref</s> <s class='C0'>place</s>, <s class='c1'>const</s> <s class='c6'>value</s>) {
-</span>    <s class='c1'>let</s> <s class='c1'>const</s> <s class='c1'>val</s> <s class='c7'>a</s> = <s class='C0'>place</s> || <s class='c6'>value</s>;
-    <s class='c1'>let</s>   <s class='c1'>mut</s> <s class='c1'>val</s> <s class='C1'>b</s> = <s class='C0'>place</s> || <s class='c6'>value</s>;
+</span>    <s class='c1'>let</s> <s class='c1'>const</s> <s class='c1'>val</s> <s class='c7'>a</s> = <s class='C0'>place</s> || <s class='c6'>value</s>
+    <s class='c1'>let</s>   <s class='c1'>mut</s> <s class='c1'>val</s> <s class='C1'>b</s> = <s class='C0'>place</s> || <s class='c6'>value</s>
 
-    <s class='c1'>let</s> <s class='c1'>const</s> <s class='c1'>ref</s> <s class='c7'>c</s> = <s class='C0'>place</s>;
-    <s class='c1'>let</s>   <s class='c1'>mut</s> <s class='c1'>ref</s> <s class='C1'>d</s> = <s class='C0'>place</s>;
+    <s class='c1'>let</s> <s class='c1'>const</s> <s class='c1'>ref</s> <s class='c7'>c</s> = <s class='C0'>place</s>
+    <s class='c1'>let</s>   <s class='c1'>mut</s> <s class='c1'>ref</s> <s class='C1'>d</s> = <s class='C0'>place</s>
 
-    <s class='C0'>d</s> += <s class='C1'>b</s> += <s class='c7'>c</s> + <s class='c7'>a</s>;
+    <s class='C0'>d</s> += <s class='C1'>b</s> += <s class='c7'>c</s> + <s class='c7'>a</s>
 }
 
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>0</s>;
-    <s class='C3'>test</s>(<s class='C1'>v</s>, <s class='C1'>v</s>);
-    <s class='c2'>return</s> <s class='C1'>v</s>;
+    <s class='c1'>mut</s> <s class='C1'>v</s> = <s class='c5'>0</s>
+    <s class='C3'>test</s>(<s class='C1'>v</s>, <s class='C1'>v</s>)
+    <s class='c2'>return</s> <s class='C1'>v</s>
 }
 </span></span></code></pre>
 </a><a class="demo-link" href="/tour/control-flow/short-circuit">
 <div class="lnk-lbl">Feature Highlight</div>
 <div class="lnk-ttl">Short-Circuit Operators</div>
 <pre><code></span><s class='c1'>fn</s> <s class='C2'>if</s>(<s class='c6'>argv</s>: _[], <s class='c7'>exists</s>!i: <s class='C4'>int</s>)
-    <s class='c6'>argv</s>.len > <s class='c7'>i</s> &amp;&amp; <s class='c6'>argv</s>[<s class='c7'>i</s>];
+    <s class='c6'>argv</s>.len > <s class='c7'>i</s> &amp;&amp; <s class='c6'>argv</s>[<s class='c7'>i</s>]
 
 <s class='c1'>fn</s> <s class='C3'>main</s>(<s class='c6'>argv</s>: <s class='C4'>string</s>[]) {
     <s class='c1'>let</s> <s class='c6'>name</s> = <s class='c6'>argv</s>.<s class='C2'>if</s>(exists: <s class='c5'>1</s>).<s class='C2'>trimmed</s> || {
-        println(<s class='c4'>"Usage: greet [name]"</s>);
-        <s class='c2'>return</s> <s class='c5'>1</s>;
-    };
+        println(<s class='c4'>"Usage: greet [name]"</s>)
+        <s class='c2'>return</s> <s class='c5'>1</s>
+    }
 
-    println(<s class='c4'>"Hello, "</s> <s class='c6'>name</s> <s class='c4'>"!"</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    println(<s class='c4'>"Hello, "</s> <s class='c6'>name</s> <s class='c4'>"!"</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </code></pre>
 </a><a class="demo-link" href="/tour/control-flow/labels">
@@ -289,15 +289,15 @@
 <pre><code></span>    :<s class='C5'>OUTER_LOOP</s>
     recipes.each: |<s class='c6'>recipe</s>| {
         <s class='c1'>fn</s> <s class='C3'>fail</s>(<s class='c6'>reason</s>: <s class='C4'>string</s>) {
-            println(<s class='c4'>"Cannot prepare "</s> <s class='c6'>recipe</s>.<s class='c6'>name</s> <s class='c4'>": "</s> reason);
+            println(<s class='c4'>"Cannot prepare "</s> <s class='c6'>recipe</s>.<s class='c6'>name</s> <s class='c4'>": "</s> reason)
             <s class='c2'>continue</s> :<s class='C5'>OUTER_LOOP</s>;
         }
 
         <s class='c6'>recipe</s>.<s class='c6'>ingredients</s>.each: |<s class='c6'>ingredient</s>|
             <s class='c2'>if</s> !(<s class='c6'>fridge</s>.has(<s class='c6'>ingredient</s>))
-                <s class='C3'>fail</s>(<s class='c4'>"We don't have "</s> ~ <s class='c6'>ingredient</s>);
+                <s class='C3'>fail</s>(<s class='c4'>"We don't have "</s> ~ <s class='c6'>ingredient</s>)
 
-        <s class='c2'>return</s> <s class='c6'>recipe</s>;
+        <s class='c2'>return</s> <s class='c6'>recipe</s>
     }
 </span></code></pre>
 </a><a class="demo-link" href="/tour/control-flow/iteration">
@@ -305,86 +305,90 @@
 <div class="lnk-ttl">Iteration</div>
 <pre><code><s class='c1'>fn</s> <s class='C3'>increment_even_until</s>(<s class='c1'>ref</s> <s class='C0'>numbers</s>: <s class='C4'>int</s>[], <s class='c6'>needle</s>: <s class='C4'>int</s>) {
     <s class='c2'>for</s> (<s class='c1'>mut</s> <s class='C1'>i</s> = <s class='c5'>0</s>; <s class='C1'>i</s> &lt; <s class='C0'>numbers</s>.len; <s class='C1'>i</s>++) {
-        <s class='c1'>ref</s> <s class='C0'>num</s> = <s class='C0'>numbers</s>[<s class='C1'>i</s>];
+        <s class='c1'>ref</s> <s class='C0'>num</s> = <s class='C0'>numbers</s>[<s class='C1'>i</s>]
 
         <s class='c2'>if</s> (<s class='C0'>num</s> &amp; <s class='c5'>1</s>)            <s class='c2'>continue</s>;
         <s class='c2'>if</s> (<s class='C0'>num</s> == <s class='c6'>needle</s>)      <s class='c2'>break</s>;
-        <s class='c2'>if</s> (<s class='C0'>num</s> > <s class='c6'>needle</s> * <s class='c5'>2</s>)   <s class='c2'>return</s> <s class='C0'>num</s>;
+        <s class='c2'>if</s> (<s class='C0'>num</s> > <s class='c6'>needle</s> * <s class='c5'>2</s>)   <s class='c2'>return</s> <s class='C0'>num</s>
 
-        <s class='C0'>num</s>++;
+        <s class='C0'>num</s>++
     }
 
-    <s class='c2'>return</s> -<s class='c5'>1</s>;
+    <s class='c2'>return</s> -<s class='c5'>1</s>
 }
 </span></code></pre>
 </a><a class="demo-link" href="/tour/types-and-reflection/structures">
 <div class="lnk-lbl">Feature Highlight</div>
 <div class="lnk-ttl">Structures &amp; Reflection</div>
 <pre><code><s class='c1'>struct</s> <s class='C4'>Person</s> {
-    name:       <s class='C4'>string</s>;
-    age:        <s class='C4'>int</s>;
+    name:       <s class='C4'>string</s>
+    age:        <s class='C4'>int</s>
 }
 
 </span><s class='c1'>fn</s> <s class='C3'>pretty_print</s>(<s class='c6'>value</s>: <s class='C4'>Person</s>) {
-    println(<s class='c4'>"Person {"</s>);
+    println(<s class='c4'>"Person {"</s>)
     <s class='c2'>for</s> (<s class='c1'>fieldname</s> i: <s class='C4'>Person</s>)
-        println(<s class='c4'>"    "</s> ~ <s class='c4'>"i"</s> ~ <s class='c4'>": "</s> <s class='c6'>value</s>.<s class='c6'>i</s>);
+        println(<s class='c4'>"    "</s> ~ <s class='c4'>"i"</s> ~ <s class='c4'>": "</s> <s class='c6'>value</s>.<s class='c6'>i</s>)
 
-    println(<s class='c4'>"}"</s>);
+    println(<s class='c4'>"}"</s>)
 }
 
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>let</s> <s class='c7'>p</s> = <s class='C4'>Person</s>(<s class='c4'>"Albert"</s>, <s class='c5'>26</s>);
-    <s class='c2'>return</s> <s class='c7'>p</s>.<s class='c7'>name</s>.len + <s class='c7'>p</s>.<s class='c7'>age</s> - <s class='c5'>32</s>;
+    <s class='c1'>let</s> <s class='c7'>p</s> = <s class='C4'>Person</s>(<s class='c4'>"Albert"</s>, <s class='c5'>26</s>)
+    <s class='c2'>return</s> <s class='c7'>p</s>.<s class='c7'>name</s>.len + <s class='c7'>p</s>.<s class='c7'>age</s> - <s class='c5'>32</s>
 }
 </span></span></code></pre>
 </a><a class="demo-link" href="/tour/types-and-reflection/user-defined-primitive-types">
 <div class="lnk-lbl">Feature Highlight</div>
 <div class="lnk-ttl">Enums, Flags &amp; Primitives</div>
 <pre><code><s class='c1'>primitive</s> <s class='C4'>Distance</s>: <s class='C4'>f32</s> {
-    Meter       = <s class='c5'>1</s>;
-    Kilometer   = <s class='c5'>1000</s>;
-};
+    Meter       = <s class='c5'>1</s>
+    Kilometer   = <s class='c5'>1000</s>
+}
 
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    assert(<s class='c5'>1000</s> * <s class='C4'>Distance</s>.Meter == <s class='C4'>Distance</s>.Kilometer);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    assert(<s class='c5'>1000</s> * <s class='C4'>Distance</s>.Meter == <s class='C4'>Distance</s>.Kilometer)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></code></pre>
 </a><a class="demo-link" href="/tour/types-and-reflection/template-types">
 <div class="lnk-lbl">Feature Highlight</div>
 <div class="lnk-ttl">Template Types</div>
 <pre><code><s class='C2'>struct</s> <s class='C4'>Pair</s>(<s class='c1'>type</s> <s class='C4'>Left</s>, <s class='c1'>type</s> <s class='C4'>Right</s>) {
-    left:   <s class='C4'>Left</s>;
-    right:  <s class='C4'>Right</s>;
+    left:   <s class='C4'>Left</s>
+    right:  <s class='C4'>Right</s>
 }
 
 <s class='c1'>fn</s> <s class='C2'>fst</s>(<s class='c6'>pair</s>: <s class='C4'>Pair</s>(&lt;<s class='C4'>Left</s>>, _)): <s class='C4'>Left</s> =
-    <s class='c6'>pair</s>.<s class='c6'>left</s>;
+    <s class='c6'>pair</s>.<s class='c6'>left</s>
 
 <s class='c1'>fn</s> <s class='C2'>snd</s>(<s class='c6'>pair</s>: <s class='C4'>Pair</s>(_, &lt;<s class='C4'>Right</s>>)): <s class='C4'>Right</s> =
-    <s class='c6'>pair</s>.<s class='c6'>right</s>;
+    <s class='c6'>pair</s>.<s class='c6'>right</s>
 
 <s class='c1'>fn</s> <s class='C2'>sum</s>(<s class='c6'>pair</s>: <s class='C4'>Pair</s>(&lt;T>, T))
     <s class='c2'>case</s> (T.is::arithmetic): T =
-        <s class='c6'>pair</s>.<s class='C2'>fst</s> + <s class='c6'>pair</s>.<s class='C2'>snd</s>;
+        <s class='c6'>pair</s>.<s class='C2'>fst</s> + <s class='c6'>pair</s>.<s class='C2'>snd</s>
 </span></code></pre>
 </a><a class="demo-link" href="/tour/scope/lexical-scope">
 <div class="lnk-lbl">Feature Highlight</div>
 <div class="lnk-ttl">Lexical Scope &amp; Shadowing</div>
-<pre><code></span><s class='c1'>fn</s> <s class='C3'>visit_each</s>(<s class='c6'>items</s>: <s class='C4'>Node</s>[], <s class='c1'>ref</s> <s class='C0'>count</s>: <s class='C4'>int</s>) {
-    <s class='c6'>items</s>.each(<s class='c6'>.</s><s class='C3'>visit</s>(:<s class='C0'>count</s>));
-}
+<pre><code></span><s class='c1'>fn</s> <s class='C2'>parent_fn</s>(<s class='c6'>array_of_T</s>: &lt;T>[]) {
+    <s class='c1'>struct</s> <s class='C4'>ChildType</s> { raw: T }
+    <s class='c1'>let</s> <s class='c6'>array_of_ChildType</s> = <s class='c6'>array_of_T</s>.map(|<s class='c7'>v</s>| <s class='C4'>ChildType</s>(<s class='c7'>v</s>))
+    <s class='c1'>mut</s> <s class='C0'>number_of_additions_performed</s> = <s class='c5'>0</s>
 
-<s class='c1'>fn</s> <s class='C3'>visit</s>(<s class='c6'>node</s>: <s class='C4'>Node</s>, <s class='c1'>ref</s> <s class='C0'>count</s>: <s class='C4'>int</s>) {
-    <s class='C0'>count</s>++;
-    <s class='c6'>node</s>.<s class='c6'>items</s>.<s class='C3'>visit_each</s>(:<s class='C0'>count</s>);
-}
+    <s class='c1'>infix</s> fn <s class='C3'>+</s>(<s class='c7'>a</s>: <s class='C4'>ChildType</s>, <s class='c7'>b</s>: <s class='C4'>ChildType</s>) {
+        <s class='C0'>number_of_additions_performed</s>++
+        <s class='c2'>return</s> <s class='C4'>ChildType</s>(<s class='c7'>a</s>.<s class='c7'>raw</s> + <s class='c7'>b</s>.<s class='c7'>raw</s>)
+    }
 
-<s class='c1'>fn</s> <s class='C2'>count</s>(<s class='c6'>node</s>: <s class='C4'>Node</s>) {
-    <s class='c1'>mut</s> <s class='C0'>count</s> = <s class='c5'>0</s>;
-    <s class='c6'>node</s>.<s class='C3'>visit</s>(:<s class='C0'>count</s>);
-    <s class='c2'>return</s> <s class='C0'>count</s>;
+    <s class='c1'>fn</s> <s class='C2'>sum</s>(<s class='c6'>array</s>: _[]) = <s class='C2'>reduce</s>(<s class='c6'>array</s>, |<s class='c7'>a</s>, <s class='c7'>b</s>| <s class='c7'>a</s> + <s class='c7'>b</s>)
+    <s class='c1'>let</s> <s class='c6'>actual</s> = <s class='C3'>sum</s>(<s class='c6'>array_of_ChildType</s>).raw
+
+    assert(<s class='c6'>actual</s> == <s class='C2'>sum</s>(<s class='c6'>array_of_T</s>)
+        &amp;&amp; <s class='C0'>number_of_additions_performed</s> == <s class='c6'>array_of_T</s>.len)
+
+    <s class='c2'>return</s> <s class='c6'>actual</s>
 }
 </span></code></pre>
 </a><a class="demo-link" href="/tour/scope/implicit">
@@ -399,35 +403,35 @@
     <s class='c1'>implicit</s> <s class='c6'>lc</s>:                <s class='C4'>LineCol</s>,
     <s class='c1'>implicit</s> <s class='c1'>ref</s> <s class='C0'>diagnostics</s>:   <s class='C4'>Diagnostic</s>[])
 {
-    <s class='C0'>diagnostics</s> ~= <s class='C4'>Diagnostic</s>(:<s class='c6'>module</s>.<s class='c6'>filename</s>, :<s class='c6'>lc</s>, :<s class='c6'>error</s>);
+    <s class='C0'>diagnostics</s> ~= <s class='C4'>Diagnostic</s>(:<s class='c6'>module</s>.<s class='c6'>filename</s>, :<s class='c6'>lc</s>, :<s class='c6'>error</s>)
 }
 
 <s class='c1'>fn</s> <s class='C3'>parse_bool</s>(<s class='c6'>span</s>: <s class='C4'>byte</s>[]) {
     <s class='c2'>if</s> (<s class='c6'>span</s> == <s class='c4'>"true"</s>)
-        <s class='c2'>return</s> <s class='c5'>true</s>;
+        <s class='c2'>return</s> <s class='c5'>true</s>
 
     <s class='c2'>if</s> (<s class='c6'>span</s> != <s class='c4'>"false"</s>)
-        <s class='C3'>emit_diagnostic</s>(<s class='c4'>"Invalid bool literal: "</s> ~ <s class='c6'>span</s>);
+        <s class='C3'>emit_diagnostic</s>(<s class='c4'>"Invalid bool literal: "</s> ~ <s class='c6'>span</s>)
 
-    <s class='c2'>return</s> <s class='c5'>false</s>;
+    <s class='c2'>return</s> <s class='c5'>false</s>
 }
 </span></code></pre>
 </a><a class="demo-link" href="/tour/scope/using">
 <div class="lnk-lbl">Feature Highlight</div>
 <div class="lnk-ttl">The “using” Keyword</div>
-<pre><code><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> };
-<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> };
+<pre><code><s class='c1'>struct</s> <s class='C4'>vec2</s>     { x: <s class='C4'>f32</s>; y: <s class='C4'>f32</s> }
+<s class='c1'>struct</s> <s class='C4'>Player</s>   { position: <s class='C4'>vec2</s> }
 
 <s class='c1'>fn</s> <s class='C3'>move</s>(<s class='c1'>ref</s> <s class='C0'>player</s>: <s class='C4'>Player</s>, <s class='c6'>dist</s>: <s class='C4'>vec2</s>) {
-    <s class='C0'>player</s>.<s class='C0'>position</s>.<s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>;
-    <s class='C0'>player</s>.<s class='C0'>position</s>.<s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>;
+    <s class='C0'>player</s>.<s class='C0'>position</s>.<s class='C0'>x</s> += <s class='c6'>dist</s>.<s class='c6'>x</s>
+    <s class='C0'>player</s>.<s class='C0'>position</s>.<s class='C0'>y</s> += <s class='c6'>dist</s>.<s class='c6'>y</s>
 }
 
 <s class='c1'>fn</s> <s class='C2'>main</s>() {
-    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>;
-    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>));
-    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>);
-    <s class='c2'>return</s> <s class='c5'>0</s>;
+    <s class='c1'>mut</s> <s class='C1'>p</s>: <s class='C4'>Player</s>
+    <s class='C1'>p</s>.<s class='C3'>move</s>(<s class='C4'>vec2</s>(<s class='c5'>10</s>, <s class='c5'>10</s>))
+    assert(<s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>x</s> * <s class='C1'>p</s>.<s class='C1'>position</s>.<s class='C1'>y</s> == <s class='c5'>100</s>)
+    <s class='c2'>return</s> <s class='c5'>0</s>
 }
 </span></code></pre>
 </a><a class="demo-link" href="/bootstrap">
