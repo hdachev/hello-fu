@@ -1,3 +1,4 @@
+import Errno;
 import fu::src::helpers;
 import widgets::Template;
 
@@ -141,6 +142,8 @@ struct Document
 
     plaintext:      string;
     using markdown: markdown::Document;
+
+    err:            string;
 };
 
 fn title(doc: Document)
@@ -498,13 +501,15 @@ fn main()
     //
     shadow mut docs = docs.par::map(|path|
     {
-        let plaintext = file::read(path);
+        mut plaintext: string;
+        let err = file::read(path, into: plaintext);
+        shadow let err = err && "Error reading(" ~ path ~ ") errno(" ~ err ~ ")";
 
         let pp = parsePath(path);
         mut markdown = markdown::parse(plaintext);
         code::snippets::preprocess(markdown);
 
-        Document(:pp, :path, :plaintext, :markdown)
+        Document(:pp, :path, :plaintext, :markdown, :err)
     });
 
     // TODO FIX this should be a tree really
@@ -515,10 +520,11 @@ fn main()
 
     //
     implicit TEMPLATE = template_prepare(
-        file::read("content/template.html"));
+        file::read("content/template.html", else: |err|
+            throw("Could not read template.html: errno(" ~ err ~ ")")));
 
     // Quick test.
-    let diagnostics = docs.par::map(|doc, i!doc_idx|
+    docs.par::each(|ref doc, i!doc_idx|
     {
         let out_path    = doc.output_dir ~ doc.output_file;
 
@@ -527,8 +533,17 @@ fn main()
 
         //
 
+        fn fail(reason: string)
+        {
+            doc.err ||= reason;
+            continue;
+        }
+
         let custom_html = file::read(
-            doc.path[.. doc.path.len - 3] ~ ".html");
+            doc.path[.. doc.path.len - 3] ~ ".html",
+            else: |err|
+                err == ENOENT ? "" : fail(
+                    "ERROR reading custom_html errno(" ~ err ~ ")"));
 
         fn page_render(mode?: markdown::html::RenderMode)
         {
@@ -540,11 +555,11 @@ fn main()
                     get: |id|
                         id == "demo"
                             ? home_demo_render(docs)
-                            : "[ERROR Unknown template id(" ~ id ~ ")]");
+                            : fail("ERROR Unknown template id(" ~ id ~ ")]"));
             }
             catch (e)
             {
-                return "[ERROR " ~ e ~ "]";
+                fail(e);
             }
 
             return markdown::html::render(doc,
@@ -567,18 +582,19 @@ fn main()
                     : id == "prev" && arg   ? render_link(docs.if(exists: doc_idx - 1), id: arg)
                     : id == "next" && arg   ? render_link(docs.if(exists: doc_idx + 1), id: arg)
 
-                                            : "[ERROR Unknown template id(" ~ id ~ ")]");
+                                            : fail("ERROR Unknown template id(" ~ id ~ ")"));
 
-        if (file::read(out_path) != html_page)
+        if (file::read(out_path, else: "") != html_page)
         {
             let err = file::write(out_path, html_page);
-            println("  WRITE doc(" doc.path ") write(" out_path ") len(" html_page.len ") err(" err ")");
+            if (err)
+                doc.err ||= "Error writing(" ~ doc.path ~ ") errno(" ~ err ~ ")";
         }
 
-        ::check(html: html_page)
+        doc.err ||= ::check(html: html_page);
     });
 
-    diagnostics.each: |reason, i| reason && docs[i].fail(reason);
+    docs.each: |doc| doc.err && doc.fail(doc.err);
 
     // Here!
     println("   DONE Bye!\n");
