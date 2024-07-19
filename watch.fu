@@ -1,0 +1,134 @@
+
+fn main()
+{
+    struct Task {
+        command:    string[];
+        dirty?:     bool;
+        now?:       f64;
+        pid?:       spawn::PID;
+    }
+
+    struct Watch {
+        path:       string;
+        regex!?:    string;
+        rec!?:      bool;
+        restart:    int;
+        pid?:       spawn::PID;
+    }
+
+    let BIN = "./bin/bake";
+
+    mut tasks = [
+        Task([ "../fu/bin/fu", "-c", "--debug", "--bin", BIN, "bake/bake.fu" ]),
+        Task([ BIN ]),
+    ];
+
+    mut watches = [
+        Watch("./bake",    regex: "\\.fu$", rec: true,  restart: 0),
+        Watch("../fu/lib", regex: "\\.fu$", rec: false, restart: 0),
+        Watch("./content",                  rec: true,  restart: 1),
+        Watch("./static",                   rec: false, restart: 1),
+    ];
+
+    fn spawn(argv: string[]): spawn::PID {
+        let pid = ev::Loop::spawn(:argv,
+            stdout: "Parent",
+            stderr: "Parent",
+            else: |err|
+            {
+                println("SPWN ER " argv.join(' ') " err(" err ")");
+            });
+
+        println("  SPAWN " argv.join(' ') " pid(" pid ")");
+        return pid;
+    }
+
+    fn respawn_watch(ref watch: Watch)
+    {
+        assert(!watch.pid);
+
+        watch.pid = spawn(
+            [ "fswatch", "--one-event" ]
+                ~ (watch.rec && [ "-r" ])
+                ~ (watch.regex && [ "-e", ".*", "-i", watch.regex ])
+                ~  watch.path);
+    }
+
+    fn respawn_task(ref task: Task) {
+        let now = now::utc();
+
+        if (task.pid) {
+            if (abs(now - task.now) > 0.125) {
+                // println("REBUILD Make dirty.");
+                task.dirty = true;
+            }
+
+            // println("REBUILD Skip, already running.");
+            return;
+        }
+
+        // println("REBUILD Launch.");
+        task.dirty  = false;
+        task.now    = now;
+        task.pid    = spawn(task.command);
+    }
+
+    :EVENT_LOOP
+    ev::Loop(
+
+        loop_start: ||
+        {
+            watches.each(.respawn_watch);
+            tasks.first.respawn_task();
+        },
+
+        child_closed: |pid, code, signo|
+        {
+            // println("  CHILD EXIT pid(" pid ") signo(" signo ") code(" code ")");
+            watches.each: |ref watch|
+            {
+                if (watch.pid == pid)
+                {
+                    println("  WATCH " watch.path " triggered.");
+
+                    watch.pid = 0;
+                    tasks[watch.restart].respawn_task();
+
+                    watch.respawn_watch();
+                    continue :EVENT_LOOP;
+                }
+            }
+
+            mut respawn_next = false;
+            tasks.each: |ref task|
+            {
+                if (respawn_next)
+                {
+                    task.respawn_task();
+                    continue :EVENT_LOOP;
+                }
+
+                if (task.pid == pid)
+                {
+                    println(
+                        code || signo ? "   FAIL " : "     OK ",
+                        task.command.join(' '),
+                        code  &&  " code(" ~ code  ~ ")",
+                        signo && " signo(" ~ signo ~ ")");
+
+                    task.pid = 0;
+                    if (task.dirty)
+                        task.respawn_task();
+
+                    // Don't respawn next if this one failed.
+                    if (code || signo)
+                        continue :EVENT_LOOP;
+
+                    respawn_next = true;
+                }
+            }
+        },
+    );
+
+    return 0;
+}
