@@ -107,11 +107,11 @@
     <s class='c2'>return</s> <s class='c6'>str</s>[<s class='C0'>start</s> .. <s class='C0'>end</s> + <s class='c5'>1</s>]
 }
 
-</span></span><s class='c1'>fn</s> <s class='C2'>if</s>(<s class='c6'>argv</s>: _[], <s class='c7'>exists</s>!i: <s class='C4'>int</s>)
+</span></span><s class='c1'>fn</s> <s class='C2'>if</s>(<s class='c6'>argv</s>: _[], <s class='c7'>i</s>: <s class='C4'>int</s>)
     <s class='c6'>argv</s>.len > <s class='c7'>i</s> &amp;&amp; <s class='c6'>argv</s>[<s class='c7'>i</s>]
 
 <s class='c1'>fn</s> <s class='C3'>main</s>(<s class='c6'>argv</s>: <s class='C4'>string</s>[]) {
-    <s class='c1'>let</s> <s class='c6'>name</s> = <s class='c6'>argv</s>.<s class='C2'>if</s>(exists: <s class='c5'>1</s>).<s class='C2'>trimmed</s> || {
+    <s class='c1'>let</s> <s class='c6'>name</s> = <s class='c6'>argv</s>.<s class='C2'>if</s>(<s class='c5'>1</s>).<s class='C2'>trimmed</s> || {
         println(<s class='c4'>"Usage: greet [name]"</s>)
         <s class='c2'>return</s> <s class='c5'>1</s>
     }
@@ -128,11 +128,11 @@
 	Note how:
 </p>
 <ul>
-	<li><code class="first-node"><s class='c6'>argv</s>.<s class='C2'>if</s></code> returns <code><s class='c6'>argv</s>[<s class='c7'>i</s>]</code> only if <code><s class='c6'>argv</s>.len > <s class='c7'>i</s></code>, and an empty slice otherwise;
+	<li><code class="first-node"><s class='c6'>argv</s>.<s class='C2'>if</s>(<s class='c5'>1</s>)</code> returns <code><s class='c6'>argv</s>[<s class='c7'>i</s>]</code> only if <code><s class='c6'>argv</s>.len > <s class='c7'>i</s></code>, and an empty slice otherwise;
 	</li>
 	<li>we're using <code><s class='c6'>argv</s>.<s class='C2'>if</s></code> as an ad-hoc pattern matching utensil in <code><s class='C2'>main</s></code>;
 	</li>
-	<li>because empty strings are <a href="#truthy-and-falsy-values">falsy</a> this program will only greet the user if the provided name, once <code><s class='C2'>trimmed</s></code> from leading and trailing whitespace, is a non empty.
+	<li>because empty strings are <a href="#truthy-and-falsy-values">falsy</a> this program will only greet the user if the provided name is a non empty string once <code><s class='C2'>trimmed</s></code> from leading and trailing whitespace.
 	</li>
 </ul>
 <h3 id="caveats"><a href="#caveats" class="h-anchor">

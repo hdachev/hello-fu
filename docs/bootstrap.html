@@ -75,9 +75,11 @@
             <div class="col-header col-header-side"></div>
             <div class="col-body"><a href="#getting-started" class="toc-item toc-2">Getting Started</a>
 <a href="#bootstrap" class="toc-item toc-3">Bootstrap</a>
+<a href="#text-editor-syntax-highlighting" class="toc-item toc-3">Text Editor &amp; Syntax Highlighting</a>
 <a href="#compiler-development-setup" class="toc-item toc-3">Compiler Development Setup</a>
+<a href="#tracking-compiler-codegen" class="toc-item toc-3">Tracking Compiler Codegen</a>
+<a href="#tracking-compiler-performance" class="toc-item toc-3">Tracking Compiler Performance</a>
 <a href="#compiler-bug-auto-reducer" class="toc-item toc-3">Compiler Bug Auto-Reducer</a>
-<a href="#intrusive-compiler-profiler" class="toc-item toc-3">Intrusive Compiler Profiler</a>
 </div>
         </div>
     </nav>
@@ -109,7 +111,7 @@ git clone [repo] fu
 cd fu</code></pre>
 
 <p>
-	
+
 </p>
 <p class='incomplete-sentence'>
 	To release-build a self-verifying compiler, run:
@@ -117,7 +119,7 @@ cd fu</code></pre>
 <pre><code class="sh">./release-safe</code></pre>
 
 <p>
-	
+
 </p>
 <p>
 	This will recursively build several generations of the compiler, until you have latest-built-by-latest.
@@ -136,57 +138,69 @@ cd fu</code></pre>
 <pre><code class="sh">~/fu/bin/fu</code></pre>
 
 <p>
-	
+
 </p>
-<pre><code class="output">Hello! This is Fu v0.0.1
+<pre><code class="output">fu-0    The Fu Programming Language
 
-To get started:
-    echo 'fn main() println("Hello world!");' >> hello.fu
+        To get started:
+            echo 'fn main() { println("Hello world!"); 0 }' >> hello.fu
 
-Build it:
-    ~/fu/bin/fu -b hello.fu
+        Build it:
+            fu -b hello.fu
 
-Run it:
-    ./hello
-        Hello world!</code></pre>
+        Run it:
+            ./hello
+                Hello world!
+
+        fu --help for more options.</code></pre>
 
 <p>
-	
+
+</p>
+<h3 id="text-editor-syntax-highlighting"><a href="#text-editor-syntax-highlighting" class="h-anchor">
+	Text Editor &amp; Syntax Highlighting
+</a></h3>
+<p>
+	Basic syntax highlighting for C or JavaScript can work for .fu files. The simpler the highlighter the better: you don't want something that will get stuck because fu code is not valid C or some such. Just use whatever works.
 </p>
 <h3 id="compiler-development-setup"><a href="#compiler-development-setup" class="h-anchor">
 	Compiler Development Setup
 </a></h3>
-<p>
-	This being a research language, odds are you are interested in hacking on the compiler.
-</p>
 <p class='incomplete-sentence'>
-	An external development watch-and-rebuild script is available:
+	An automatic watch-rebuild-and-retest script is available at the root of the repo for compiler hackers:
 </p>
-<pre><code class="sh">node watch.js</code></pre>
+<pre><code class="sh">cd ~/fu
+fu -r watch.fu</code></pre>
 
 <p>
-	
+
 </p>
 <p>
-	This builds and tests several generations of the compiler, immediately and on every compiler source change, always starting from a base bootstrap of a known-to-work historical compiler version.
+	This builds and tests several generations of the compiler, immediately and on every compiler source change, starting from a base bootstrap of a known-to-work historical compiler version.
 </p>
 <p>
-	Effectively, this limits the dialect of the language that is usable in the compiler itself to whatever is supported by the committed-in-repo known-to-work C++ sources. These sources are periodically updated, akin to an internal release, making newer syntax and language features available for compiler development.
+	Running this for the first time will build and run the entire test suite. This takes a while, especially on a Mac where XProtect will slow things down to a crawl. All artifacts are cached, so iteration time is excellent once this is done.
+</p>
+<h3 id="tracking-compiler-codegen"><a href="#tracking-compiler-codegen" class="h-anchor">
+	Tracking Compiler Codegen
+</a></h3>
+<p>
+	Every run of the test suite emits all code generated + various diagnostics to <code>testdiff/now.td</code>. The file is big and rarely commited, but very useful when you want to compare differences in codegen between two commits.
+</p>
+<p>
+	With <code>watch.fu</code> running, checkout the commit prior to your change, commit the <code>now.td</code> you get out of the testsuite, cherry-pick your change on top and enjoy the diff of everything it affects.
+</p>
+<h3 id="tracking-compiler-performance"><a href="#tracking-compiler-performance" class="h-anchor">
+	Tracking Compiler Performance
+</a></h3>
+<p>
+	A script for benchmarking compiler performance is available at the root of the repo. To compare a bunch of commits, kill <code>watch.fu</code>, <code>reset --hard</code> and run <code>./bench AAAAAAA BBBBBBB CCCCCCC</code>. The script pre-builds per-commit non-self-testing release compiler executables, then runs them back to back compiling the compiler itself at the commit you started from. You'll also get rough comparisons of per-pass memory use.
 </p>
 <h3 id="compiler-bug-auto-reducer"><a href="#compiler-bug-auto-reducer" class="h-anchor">
 	Compiler Bug Auto-Reducer
 </a></h3>
 <p>
-	Recursion is great at breaking our compiler, and the compiler itself is a heavily recursive program, which makes it great at breaking itself.
-</p>
-<p>
-	TODO cleanup &amp; describe <code>node reduce.js</code>
-</p>
-<h3 id="intrusive-compiler-profiler"><a href="#intrusive-compiler-profiler" class="h-anchor">
-	Intrusive Compiler Profiler
-</a></h3>
-<p>
-	TODO cleanup &amp; describe <code>./perf</code>
+	TODO cleanup &amp; describe <code>reduce.js</code>
 </p>
 </div>
         <div class="col-foot">

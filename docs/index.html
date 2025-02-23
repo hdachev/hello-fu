@@ -270,11 +270,11 @@
 </a><a class="demo-link" href="/tour/control-flow/short-circuit">
 <div class="lnk-lbl">Feature Highlight</div>
 <div class="lnk-ttl">Short-Circuit Operators</div>
-<pre><code></span><s class='c1'>fn</s> <s class='C2'>if</s>(<s class='c6'>argv</s>: _[], <s class='c7'>exists</s>!i: <s class='C4'>int</s>)
+<pre><code></span><s class='c1'>fn</s> <s class='C2'>if</s>(<s class='c6'>argv</s>: _[], <s class='c7'>i</s>: <s class='C4'>int</s>)
     <s class='c6'>argv</s>.len > <s class='c7'>i</s> &amp;&amp; <s class='c6'>argv</s>[<s class='c7'>i</s>]
 
 <s class='c1'>fn</s> <s class='C3'>main</s>(<s class='c6'>argv</s>: <s class='C4'>string</s>[]) {
-    <s class='c1'>let</s> <s class='c6'>name</s> = <s class='c6'>argv</s>.<s class='C2'>if</s>(exists: <s class='c5'>1</s>).<s class='C2'>trimmed</s> || {
+    <s class='c1'>let</s> <s class='c6'>name</s> = <s class='c6'>argv</s>.<s class='C2'>if</s>(<s class='c5'>1</s>).<s class='C2'>trimmed</s> || {
         println(<s class='c4'>"Usage: greet [name]"</s>)
         <s class='c2'>return</s> <s class='c5'>1</s>
     }
@@ -437,17 +437,19 @@
 </a><a class="demo-link" href="/bootstrap">
 <div class="lnk-lbl">Feature Highlight</div>
 <div class="lnk-ttl">Getting Started</div>
-<pre><code>Hello! This is Fu v0.0.1
+<pre><code>fu-0    The Fu Programming Language
 
-To get started:
-    echo 'fn main() println("Hello world!");' >> hello.fu
+        To get started:
+            echo 'fn main() { println("Hello world!"); 0 }' >> hello.fu
 
-Build it:
-    ~/fu/bin/fu -b hello.fu
+        Build it:
+            fu -b hello.fu
 
-Run it:
-    ./hello
-        Hello world!</code></pre>
+        Run it:
+            ./hello
+                Hello world!
+
+        fu --help for more options.</code></pre>
 </a></div>
 
 <script>
