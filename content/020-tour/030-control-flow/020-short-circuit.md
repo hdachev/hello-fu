@@ -21,11 +21,11 @@ fn trimmed(str: string) {
 }
 
 //: hide hat
-fn if(argv: _[], exists!i: int)
+fn if(argv: _[], i: int)
     argv.len > i && argv[i];
 
 fn main(argv: string[]) {
-    let name = argv.if(exists: 1).trimmed || {
+    let name = argv.if(1).trimmed || {
         println("Usage: greet [name]");
         return 1;
     };
@@ -38,9 +38,9 @@ fn main(argv: string[]) {
 
 Note how:
 
-- `argv.if` returns `argv[i]` only if `argv.len > i`, and an empty slice otherwise;
+- `argv.if(1)` returns `argv[i]` only if `argv.len > i`, and an empty slice otherwise;
 - we're using `argv.if` as an ad-hoc pattern matching utensil in `main`;
-- because empty strings are [falsy](#truthy-and-falsy-values) this program will only greet the user if the provided name, once `trimmed` from leading and trailing whitespace, is a non empty.
+- because empty strings are [falsy](#truthy-and-falsy-values) this program will only greet the user if the provided name is a non empty string once `trimmed` from leading and trailing whitespace.
 
 ### Caveats
 

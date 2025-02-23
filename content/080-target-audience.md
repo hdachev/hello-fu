@@ -1,7 +1,7 @@
 
 ## Who Is This For?
 
-**Fu is still in active research and lacks a useful standard library.** Unless you're a language geek, it'd be too early to consider using it. But if you are, we are looking for co-conspirators interested in:
+**Fu is still in active research and lacks a useful standard library.** Unless you're a language geek, it'd be too early to consider using it. But if you are, we are looking for language designers interested in:
 
 - IO, networking, cryptography;
 - audio, video and graphics;

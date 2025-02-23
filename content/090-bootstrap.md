@@ -33,39 +33,48 @@ We don't "install" the compiler for you automatically - you can chose to either:
 ~/fu/bin/fu
 ```
 ```output
-Hello! This is Fu v0.0.1
+fu-0    The Fu Programming Language
 
-To get started:
-    echo 'fn main() println("Hello world!");' >> hello.fu
+        To get started:
+            echo 'fn main() { println("Hello world!"); 0 }' >> hello.fu
 
-Build it:
-    ~/fu/bin/fu -b hello.fu
+        Build it:
+            fu -b hello.fu
 
-Run it:
-    ./hello
-        Hello world!
+        Run it:
+            ./hello
+                Hello world!
+
+        fu --help for more options.
 ```
+
+### Text Editor & Syntax Highlighting
+
+Basic syntax highlighting for C or JavaScript can work for .fu files. The simpler the highlighter the better: you don't want something that will get stuck because fu code is not valid C or some such. Just use whatever works.
 
 ### Compiler Development Setup
 
-This being a research language, odds are you are interested in hacking on the compiler.
-
-An external development watch-and-rebuild script is available:
+An automatic watch-rebuild-and-retest script is available at the root of the repo for compiler hackers:
 
 ```sh
-node watch.js
+cd ~/fu
+fu -r watch.fu
 ```
 
-This builds and tests several generations of the compiler, immediately and on every compiler source change, always starting from a base bootstrap of a known-to-work historical compiler version.
+This builds and tests several generations of the compiler, immediately and on every compiler source change, starting from a base bootstrap of a known-to-work historical compiler version.
 
-Effectively, this limits the dialect of the language that is usable in the compiler itself to whatever is supported by the committed-in-repo known-to-work C++ sources. These sources are periodically updated, akin to an internal release, making newer syntax and language features available for compiler development.
+Running this for the first time will build and run the entire test suite. This takes a while, especially on a Mac where XProtect will slow things down to a crawl. All artifacts are cached, so iteration time is excellent once this is done.
+
+### Tracking Compiler Codegen
+
+Every run of the test suite emits all code generated + various diagnostics to `testdiff/now.td`. The file is big and rarely commited, but very useful when you want to compare differences in codegen between two commits.
+
+With `watch.fu` running, checkout the commit prior to your change, commit the `now.td` you get out of the testsuite, cherry-pick your change on top and enjoy the diff of everything it affects.
+
+### Tracking Compiler Performance
+
+A script for benchmarking compiler performance is available at the root of the repo. To compare a bunch of commits, kill `watch.fu`, `reset --hard` and run `./bench AAAAAAA BBBBBBB CCCCCCC`. The script pre-builds per-commit non-self-testing release compiler executables, then runs them back to back compiling the compiler itself at the commit you started from. You'll also get rough comparisons of per-pass memory use.
 
 ### Compiler Bug Auto-Reducer
 
-Recursion is great at breaking our compiler, and the compiler itself is a heavily recursive program, which makes it great at breaking itself.
-
-TODO cleanup & describe `node reduce.js`
-
-### Intrusive Compiler Profiler
-
-TODO cleanup & describe `./perf`
+TODO cleanup & describe `reduce.js`
